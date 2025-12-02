@@ -28,10 +28,13 @@ export const createEvent = async (req, res) => {
 
 
 export const getEvents = async (req, res) => {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
     try {
-        const events = await Event.find();
+        const events = await Event.find().skip(skip).limit(limit);
         const total = await Event.countDocuments();
-        res.status(200).json({ data: events, total });
+        res.status(200).json({ data: events, pagination: { page, limit, total } });
     } catch (error) {
         console.error("Get Events Error:", error);
         res.status(500).json({ message: error.message || "Server error" });

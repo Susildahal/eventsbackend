@@ -5,7 +5,7 @@ import bcrypt from "bcryptjs";
 
 export const register = async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { name, email, password } = req.body;
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -15,7 +15,7 @@ export const register = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     // Create new user
     const newUser = new User({
-      username,
+      name,
       email,
       password: hashedPassword,
     });
@@ -29,7 +29,6 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log(req.body);
     // Find user by email
     const user = await User.findOne({ email });
     if (!user) {
@@ -47,5 +46,9 @@ export const login = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: "Server error" });
   }
+};
+export const logout = (req, res) => {
+  res.clearCookie("token");
+  res.status(200).json({ message: "Logout successful" });
 };
 

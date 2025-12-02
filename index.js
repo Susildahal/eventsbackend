@@ -7,6 +7,8 @@ import userrouter from './routes/auth.js';
 import eventrouter from './routes/events.js';
 import servicerouter from './routes/service.js';
 import settingsRouter from './routes/siteSetting.js';
+import contractrouter from './routes/constactus.js';
+import faqrouter from './routes/faq.js';
 dotenv.config();
 
 // Initialize Express app
@@ -34,6 +36,8 @@ app.use('/api/users', userrouter);
 app.use('/api/events', eventrouter);
 app.use('/api/services', servicerouter);
 app.use('/api/settings', settingsRouter);
+app.use('/api/contactus', contractrouter);
+app.use('/api/faqs', faqrouter);
 // Connect to MongoDB
 connectDB();
 // Start the server
