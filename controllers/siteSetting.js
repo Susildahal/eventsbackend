@@ -18,11 +18,6 @@ export const getSiteSettings = async (req, res) => {
 export const createSiteSettings = async (req, res) => {
     try {
         const { phone, email, location, address , siteName, socialMedia, siteDescription } = req.body;
-        // Accept `socialMedia` as:
-        // - an array of {url,icon}
-        // - a JSON string of the above
-        // - a JS-object-like string using single quotes (e.g. "{ url: '...', icon: '...' }")
-        // - a map/object where values are objects ({facebook: {url,icon}})
         const normalize = (input) => {
             if (!input) return [];
             // If already an array of objects

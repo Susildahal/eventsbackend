@@ -11,6 +11,9 @@ import contractrouter from './routes/constactus.js';
 import faqrouter from './routes/faq.js';
 import galleryRouter from './routes/gallery.js';
 import booknowRouter from './routes/booknow.js';
+import eventTypesRouter from './routes/eventstypes.js';
+import serviceTypesRouter from './routes/servicetypes.js';
+import servicedashbordRouter from './routes/servicedashbord.js';
 dotenv.config();
 
 // Initialize Express app
@@ -42,6 +45,9 @@ app.use('/api/contactus', contractrouter);
 app.use('/api/faqs', faqrouter);
 app.use('/api/gallery', galleryRouter);
 app.use('/api/bookings', booknowRouter);
+app.use('/api/eventtypes', eventTypesRouter);
+app.use('/api/servicetypes', serviceTypesRouter);
+app.use('/api/servicedashboard', servicedashbordRouter);
 // Connect to MongoDB
 connectDB();
 
