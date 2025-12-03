@@ -14,6 +14,7 @@ import booknowRouter from './routes/booknow.js';
 import eventTypesRouter from './routes/eventstypes.js';
 import serviceTypesRouter from './routes/servicetypes.js';
 import servicedashbordRouter from './routes/servicedashbord.js';
+import aboutRouter from './routes/about.js';
 dotenv.config();
 
 // Initialize Express app
@@ -48,6 +49,7 @@ app.use('/api/bookings', booknowRouter);
 app.use('/api/eventtypes', eventTypesRouter);
 app.use('/api/servicetypes', serviceTypesRouter);
 app.use('/api/servicedashboard', servicedashbordRouter);
+app.use('/api/about', aboutRouter);
 // Connect to MongoDB
 connectDB();
 
