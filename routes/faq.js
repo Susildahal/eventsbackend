@@ -8,4 +8,5 @@ faqrouter.get("/", getAllFaqs);
 faqrouter.get("/:id", getFaqById);
 faqrouter.delete("/:id", deleteFaq);
 faqrouter.put("/:id", updateFaq);
+
 export default faqrouter;

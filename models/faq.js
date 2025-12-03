@@ -1,3 +1,4 @@
+
 import mongoose from "mongoose";
 
 const faqSchema = new mongoose.Schema({
@@ -14,7 +15,9 @@ const faqSchema = new mongoose.Schema({
     title: {
         type: String,
         required: true,
-        message: "Title is required"
+        message: "Title is required",
+        enum: ['General', 'Cancellation', 'Premits', 'Catering'],
+        message : '{VALUE} is not supported',
     },
     
 

@@ -3,24 +3,35 @@ import mongoose from "mongoose";
 const siteSettingSchema = new mongoose.Schema({
     phone: {
         type: String,
-        required: true,
-        message: "Phone number is required"
     },
     email: {
         type: String,
-        required: true,
-        match: [/.+@.+\..+/, "Please provide a valid email"],
-        message: "Email is required"
+      
     },
     location: {
         type: String,
-        required: true,
-        message: "Location is required"
+   
     },
     address: {
         type: String,
         message: "Address"
-    }
+    },
+
+    siteName: {
+        type: String,
+
+    },
+    // Allow an array of social media objects with url and icon fields
+    socialMedia: [{
+        url: { type: String },
+        icon: { type: String },
+        name: { type: String}
+    }],
+    siteDescription:{
+        type:String,        
+    },
+    
+
 },
 { timestamps: true }
 );

@@ -25,10 +25,18 @@ export const getAllFaqs = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const skip = (page - 1) * limit;
     const title = req.query.title;
-    const totalFaqs = await Faq.countDocuments();
+    // Build filter object so the same filter can be used for both count and find
+    const filter = {};
+    if (title) {
+        filter.title = new RegExp(title, "i");
+    }
 
     try {
-        const faqs = await Faq.find(title ? { title: new RegExp(title, "i") } : {}).skip(skip).limit(limit);
+        // Count documents matching the filter (important for correct pagination)
+        const totalFaqs = await Faq.countDocuments(filter);
+
+        // Fetch page of results
+        const faqs = await Faq.find(filter).skip(skip).limit(limit);
         res.status(200).json({ data: faqs, pagination: { page, limit, total: totalFaqs } });
     }
     catch (error) {

@@ -13,8 +13,8 @@ const settingsRouter = express.Router();
 settingsRouter.get("/", getSiteSettings);
 
 // Protected routes (require authentication)
-settingsRouter.post("/", verifyToken, createSiteSettings);
-settingsRouter.put("/", verifyToken, updateSiteSettings);
-settingsRouter.delete("/", verifyToken, deleteSiteSettings);
+settingsRouter.post("/",  createSiteSettings);
+settingsRouter.put("/",  updateSiteSettings);
+settingsRouter.delete("/",  deleteSiteSettings);
 
 export default settingsRouter;

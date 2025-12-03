@@ -9,6 +9,8 @@ import servicerouter from './routes/service.js';
 import settingsRouter from './routes/siteSetting.js';
 import contractrouter from './routes/constactus.js';
 import faqrouter from './routes/faq.js';
+import galleryRouter from './routes/gallery.js';
+import booknowRouter from './routes/booknow.js';
 dotenv.config();
 
 // Initialize Express app
@@ -25,7 +27,7 @@ app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 app.use(cors(corsOptions));
 
 // Serve uploads directory as static
-app.use('/uploads', express.static('uploads'));
+app.use('/api/uploads', express.static('uploads'));
 
 // Sample route
 app.get('/', (req, res) => {
@@ -38,8 +40,24 @@ app.use('/api/services', servicerouter);
 app.use('/api/settings', settingsRouter);
 app.use('/api/contactus', contractrouter);
 app.use('/api/faqs', faqrouter);
+app.use('/api/gallery', galleryRouter);
+app.use('/api/bookings', booknowRouter);
 // Connect to MongoDB
 connectDB();
+
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error('Unhandled Error:', err);
+  if (res.headersSent) return next(err);
+  if (err.name === 'ValidationError') {
+    const errors = Object.values(err.errors).map(e => ({ path: e.path, message: e.message }));
+    return res.status(400).json({ message: 'Validation error', errors });
+  }
+  if (err.name === 'CastError') {
+    return res.status(400).json({ message: 'Invalid value', path: err.path, value: err.value });
+  }
+  res.status(err.status || 500).json({ message: err.message || 'Server error' });
+});
 // Start the server
 app.listen(port,"0.0.0.0", () => {
   console.log(`Server is running on port ${port}`);

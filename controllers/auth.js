@@ -52,3 +52,93 @@ export const logout = (req, res) => {
   res.status(200).json({ message: "Logout successful" });
 };
 
+
+ export const getallusers = async (req, res) => {
+
+    try {
+        const users = await User.find().select("-password").sort({ createdAt: -1 });
+        res.status(200).json({ data: users });
+    }
+    catch (error) {
+
+        res.status(500).json({ message: error.message || "Server error" });
+    }
+}
+export const deleteuser = async (req, res) => {
+
+    try {
+        const { id } = req.params;
+        const deletedUser = await User.findByIdAndDelete(id); 
+        if (!deletedUser) {
+
+            return res.status(404).json({ message: "User not found" });
+        }
+        res.status(200).json({ message: "User deleted successfully" });
+    }
+    catch (error) {
+
+        console.error("Delete User Error:", error);
+        if (error.name === 'CastError') {
+            return res.status(400).json({ message: 'Invalid user id' });
+        }
+        res.status(500).json({ message: error.message || "Server error" });
+    }
+};
+
+export const mee = async (req, res) => {
+  try {
+    const userId = req.userId;
+
+    const user = await User.findById(userId).select("-password");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    
+    res.status(200).json({ user });
+  } catch (error) {
+    res.status(500).json({ message: error.message || "Server error" });
+  }
+}
+
+
+export const updatepassowrd = async (req, res) => {
+
+    try {
+        const { id } = req.params;
+        const { oldPassword, password } = req.body;
+        const user = await User.findById(id);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+    // Validate input
+    if (!oldPassword || !password) {
+      return res.status(400).json({ message: 'Both oldPassword and password are required' });
+    }
+
+    // Ensure values are strings to avoid bcrypt errors
+    const oldPwdStr = String(oldPassword);
+
+    const updatepassword = await bcrypt.compare(oldPwdStr, user.password);
+        if (!updatepassword) {
+            return res.status(400).json({ message: "Old password is incorrect" });
+        }
+    // Hash the new password and update
+    const hashedPassword = await bcrypt.hash(String(password), 10);
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
+      { password: hashedPassword },
+      { new: true }
+    );
+        if (!updatedUser) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        res.status(200).json({ message: "Password updated successfully", data: updatedUser });
+    }
+    catch (error) {
+        console.error("Update Password Error:", error);
+        if (error.name === 'CastError') {
+            return res.status(400).json({ message: 'Invalid user id' });
+        } 
+        res.status(500).json({ message: error.message || "Server error" });
+    }
+};
