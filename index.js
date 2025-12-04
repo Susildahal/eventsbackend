@@ -3,6 +3,7 @@ import cors from 'cors';
 import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
 import connectDB from './config/connectDB.js';
+import { configureCloudinary } from './config/cloudinary.js';
 import userrouter from './routes/auth.js';
 import eventrouter from './routes/events.js';
 import servicerouter from './routes/service.js';
@@ -15,10 +16,13 @@ import eventTypesRouter from './routes/eventstypes.js';
 import serviceTypesRouter from './routes/servicetypes.js';
 import servicedashbordRouter from './routes/servicedashbord.js';
 import aboutRouter from './routes/about.js';
+
 dotenv.config();
 
 // Initialize Express app
 const app = express();
+// Configure Cloudinary
+configureCloudinary();
 const port = process.env.PORT || 5000;
 console.log("PORT:", process.env.PORT);
 const corsOptions = {
