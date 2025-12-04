@@ -6,6 +6,11 @@ export const savedServiceTypes = async (req, res) => {
         if (!name) {
             return res.status(400).json({ message: "Service type name is required" });
         }
+
+        const isexist = await ServiceTypes.findOne({ name: name });
+        if (isexist) {
+            return res.status(400).json({ message: `Service type with the name "${name}" already exists` });
+        }
         const newServiceType = new ServiceTypes({ name });
         await newServiceType.save();
         res.status(201).json({ message: "Service type saved successfully", data: newServiceType });

@@ -23,10 +23,10 @@ dotenv.config();
 const app = express();
 // Configure Cloudinary
 configureCloudinary();
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 8000;
 console.log("PORT:", process.env.PORT);
 const corsOptions = {
-  origin: ['http://localhost:3000'],
+  origin: ['http://localhost:3000', 'http://192.168.10.79:3000'],
   optionsSuccessStatus: 200     
 };
 

@@ -1,35 +1,29 @@
 import multer from "multer";
 import { cloudinary } from "../config/cloudinary.js";
-import { CloudinaryStorage } from "multer-storage-cloudinary";
 
-// Configure Cloudinary storage with transformation
-const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: "ngo-uploads",
-    format: async (req, file) => "webp", // Convert all images to WebP
-    transformation: [
-      { width: 1920, height: 1920, crop: "limit" }, // Max dimensions
-      { quality: "auto:good" }, // Automatic quality optimization
-      { fetch_format: "auto" } // Automatic format selection
-    ],
-    public_id: (req, file) => {
-      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-      return `${file.fieldname}-${uniqueSuffix}`;
-    }
-  }
-});
+const storage = multer.memoryStorage();
 
 // Upload middleware with file size and type validation
 const upload = multer({
-  storage: storage,
+  storage,
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit for upload
   fileFilter: (req, file, cb) => {
-    const allowedTypes = ["image/jpeg", "image/png", "image/jpg", "image/webp"];
-    if (!allowedTypes.includes(file.mimetype)) {
-      return cb(new Error("Only JPG, JPEG, PNG, and WEBP images are allowed"), false);
+    // Accept any image/* MIME type (includes svg+xml) to be permissive for clients
+    // If a non-image field arrives, we won't throw — we record it and skip the file so the request continues.
+    try {
+      const isImage = typeof file.mimetype === 'string' && file.mimetype.startsWith('image/');
+      if (!isImage) {
+        req.rejectedFiles = req.rejectedFiles || [];
+        req.rejectedFiles.push({ fieldname: file.fieldname, originalname: file.originalname, mimetype: file.mimetype });
+        return cb(null, false);
+      }
+      return cb(null, true);
+    } catch (err) {
+      // In case of unexpected errors, be conservative and skip the file instead of crashing
+      req.rejectedFiles = req.rejectedFiles || [];
+      req.rejectedFiles.push({ fieldname: file.fieldname, originalname: file.originalname, mimetype: file.mimetype, error: String(err) });
+      return cb(null, false);
     }
-    cb(null, true);
   }
 });
 
