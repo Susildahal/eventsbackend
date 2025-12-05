@@ -17,16 +17,14 @@ const BudgetSchema = new mongoose.Schema({
   description: { type: String },
 });
 
-const ImageSchema = new mongoose.Schema({
-  id: { type: String, required: true },
-  url: { type: String },
-});
+
 
 const MissionVisionSchema = new mongoose.Schema({
   id: { type: String, required: true },
   type: { type: String }, // "mission" or "vision"
   title: { type: String },
   description: { type: String },
+  
 });
 
 const SustainabilitySchema = new mongoose.Schema({
@@ -74,9 +72,9 @@ const AboutUsSchema = new mongoose.Schema(
 
     missionTitle: { type: String },
     missionDescription: { type: String },
+    visionDescription: { type: String },
     missionVision: [MissionVisionSchema],
 
-    images: [ImageSchema],
 
     sustainabilityTitle: { type: String },
     sustainability: [SustainabilitySchema],

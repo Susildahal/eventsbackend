@@ -40,6 +40,10 @@ const eventSchema = new mongoose.Schema({
         required: false, 
         message:" Cover Image is required"
     },
+    coverImagePublicId: {
+        type: String,
+        required: false,
+    },
     galleryImages: [{
         type: String,
     }],

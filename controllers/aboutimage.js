@@ -1,13 +1,17 @@
 import mongoose from "mongoose";
-import Gallery from "../models/gallery.js";
+import Aboutimage from "../models/aboutimage.js";
 import { v2 as cloudinary } from "cloudinary";
 
-// Create gallery item with image upload to Cloudinary
-export const createGalleryItem = async (req, res) => {
+// Create Aboutimage item with image upload to Cloudinary
+export const createaboutimage = async (req, res) => {
   try {
     const { title, image } = req.body;
     if (!title) {
       return res.status(400).json({ message: "Title is required" });
+    }
+    const total = await Aboutimage.countDocuments();
+    if (total >= 5) {
+      return res.status(400).json({ message: "Maximum of 5 images allowed" });
     }
 
     let imageUrl, publicId;
@@ -28,34 +32,34 @@ export const createGalleryItem = async (req, res) => {
     } else if (image) {
       // Use provided image URL
       imageUrl = image;
-      publicId = null;
+      publicId = null; // No public_id for external URLs
     } else {
       return res.status(400).json({ message: "Image file or image URL is required" });
     }
 
     // Save to database
-    const item = new Gallery({
+    const item = new Aboutimage({
       title,
       image: imageUrl,
       public_id: publicId
     });
     await item.save();
 
-    res.status(201).json({ message: "Gallery item created", data: item });
+    res.status(201).json({ message: "Aboutimage item created", data: item });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// Get all gallery items with pagination
-export const getAllGalleryItems = async (req, res) => {
+// Get all Aboutimage items with pagination
+export const getAllAboutimageItems = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    const total = await Gallery.countDocuments();
-    const items = await Gallery.find().skip(skip).limit(limit);
+    const total = await Aboutimage.countDocuments();
+    const items = await Aboutimage.find().skip(skip).limit(limit);
 
     res.status(200).json({ data: items, pagination: { total, page, limit } });
   } catch (error) {
@@ -63,23 +67,23 @@ export const getAllGalleryItems = async (req, res) => {
   }
 };
 
-// Get single gallery item
-export const getGalleryItemById = async (req, res) => {
+// Get single Aboutimage item
+export const getAboutimageItemById = async (req, res) => {
   try {
     const { id } = req.params;
     if (!id || id === "undefined" || !mongoose.isValidObjectId(id)) {
       return res.status(400).json({ message: "Invalid or missing id parameter" });
     }
-    const item = await Gallery.findById(id);
-    if (!item) return res.status(404).json({ message: "Gallery item not found" });
+    const item = await Aboutimage.findById(id);
+    if (!item) return res.status(404).json({ message: "Aboutimage item not found" });
     res.status(200).json({ data: item });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// Update gallery item
-export const updateGalleryItem = async (req, res) => {
+// Update Aboutimage item
+export const updateAboutimageItem = async (req, res) => {
   try {
     const { title, image } = req.body;
     const { id } = req.params;
@@ -90,9 +94,9 @@ export const updateGalleryItem = async (req, res) => {
       return res.status(400).json({ message: "Title is required" });
     }
 
-    const item = await Gallery.findById(id);
+    const item = await Aboutimage.findById(id);
     if (!item) {
-      return res.status(404).json({ message: "Gallery item not found" });
+      return res.status(404).json({ message: "Aboutimage item not found" });
     }
 
     let updateData = { title };
@@ -121,30 +125,28 @@ export const updateGalleryItem = async (req, res) => {
       // Use provided image URL
       updateData.image = image;
       // Optionally delete old if changing to URL, but keep public_id for now
-    } else {
-      return res.status(400).json({ message: "Image file or image URL is required" });
     }
 
     // Update database
-    const updated = await Gallery.findByIdAndUpdate(id, updateData, { new: true });
+    const updated = await Aboutimage.findByIdAndUpdate(id, updateData, { new: true });
 
-    res.status(200).json({ message: "Gallery item updated", data: updated });
+    res.status(200).json({ message: "Aboutimage item updated", data: updated });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// Delete gallery item
-export const deleteGalleryItem = async (req, res) => {
+// Delete Aboutimage item
+export const deleteAboutimageItem = async (req, res) => {
   try {
     const { id } = req.params;
     if (!id || id === "undefined" || !mongoose.isValidObjectId(id)) {
       return res.status(400).json({ message: "Invalid or missing id parameter" });
     }
 
-    const item = await Gallery.findByIdAndDelete(id);
+    const item = await Aboutimage.findByIdAndDelete(id);
     if (!item) {
-      return res.status(404).json({ message: "Gallery item not found" });
+      return res.status(404).json({ message: "Aboutimage item not found" });
     }
 
     // Delete from Cloudinary
@@ -152,7 +154,7 @@ export const deleteGalleryItem = async (req, res) => {
       await cloudinary.uploader.destroy(item.public_id);
     }
 
-    res.status(200).json({ message: "Gallery item deleted" });
+    res.status(200).json({ message: "Aboutimage item deleted" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

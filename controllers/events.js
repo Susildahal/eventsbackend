@@ -1,4 +1,16 @@
 import Event from "../models/events.js";
+import { cloudinary } from "../config/cloudinary.js";
+
+const uploadBuffer = async (buffer) => {
+  const result = await new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream({ folder: 'events', resource_type: 'image' }, (err, res) => {
+      if (err) return reject(err);
+      resolve(res);
+    });
+    stream.end(buffer);
+  });
+  return result;
+};
 
 export const createEvent = async (req, res) => {
     try {
@@ -8,7 +20,9 @@ export const createEvent = async (req, res) => {
         const coverImageFile = req.file;
         
         if (coverImageFile) {
-            newEvent.coverImage = coverImageFile.path; // Save the file path to the event document
+            const uploaded = await uploadBuffer(coverImageFile.buffer);
+            newEvent.coverImage = uploaded.secure_url;
+            newEvent.coverImagePublicId = uploaded.public_id;
         }
         
         await newEvent.save();
@@ -60,7 +74,13 @@ export const updateEvent = async (req, res) => {
         const updatedData = req.body;
         const coverImageFile = req.file;
         if (coverImageFile) {
-            updatedData.coverImage = coverImageFile.path;
+            const uploaded = await uploadBuffer(coverImageFile.buffer);
+            updatedData.coverImage = uploaded.secure_url;
+            updatedData.coverImagePublicId = uploaded.public_id;
+        } else if (updatedData.image) {
+            // If no file but image URL sent, use it
+            updatedData.coverImage = updatedData.image;
+            delete updatedData.image; // Remove the image field
         }
         const updatedEvent = await Event.findByIdAndUpdate(eventId, updatedData, { new: true });
         if (!updatedEvent) {

@@ -37,7 +37,6 @@ export const createBooking = async (req, res) => {
             email,
             phone,
             eventdate,
-            
             budgetrange,
             needs: parsedNeeds,
             contactMethod: parsedContacts,
@@ -68,22 +67,54 @@ export const createBooking = async (req, res) => {
 
 
 export const getAllBookings = async (req, res) => {
-    try {
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10;
-        const skip = (page - 1) * limit;
-const totalBookings = await Booknow.countDocuments();
-        const bookings = await Booknow.find().sort({ createdAt: -1 }).skip(skip).limit(limit);
-        res.status(200).json({ data: bookings, pagination: { total: totalBookings, page, limit } });
-    }
-    catch (error) {
-        console.error("Get Bookings Error:", error);
-        if (error.name === 'CastError') {
-            return res.status(400).json({ message: 'Invalid id provided' });
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    // 1) Pagination filters
+    const filter = req.query.status ? { status: req.query.status } : {};
+
+    // 2) Stats in ONE query
+    const statsAggregate = await Booknow.aggregate([
+      {
+        $group: {
+          _id: "$status",
+          count: { $sum: 1 }
         }
-        res.status(500).json({ message: error.message || "Server error" });
-    }
+      }
+    ]);
+
+    // 3) Format stats
+    const stats = {
+      totalCancelled: statsAggregate.find(x => x._id === 'Cancelled')?.count || 0,
+      totalPending: statsAggregate.find(x => x._id === 'Pending')?.count || 0,
+      totalCompleted: statsAggregate.find(x => x._id === 'Completed')?.count || 0,
+      totalConfirmed: statsAggregate.find(x => x._id === 'Confirmed')?.count || 0
+    };
+
+    // 4) Total bookings count (filtered)
+    const total = await Booknow.countDocuments(filter);
+
+    // 5) Paginated bookings
+    const bookings = await Booknow.find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    res.status(200).json({
+      data: bookings,
+      stats,
+      pagination: { total, page, limit }
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message || "Server error"
+    });
+  }
 };
+
 export const getBookingById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -122,3 +153,22 @@ export const deleteBooking = async (req, res) => {
     }
 };
 
+ 
+ export const updateBooking = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const updatedData = req.body;
+        const updatedBooking = await Booknow.findByIdAndUpdate(id, updatedData, { new: true });
+
+        if (!updatedBooking) {
+            return res.status(404).json({ message: "Booking not found" });
+        }   
+        res.status(200).json({ message: "Booking updated successfully", data: updatedBooking });
+    } catch (error) {
+        console.error("Update Booking Error:", error);  
+        if (error.name === 'CastError') {
+            return res.status(400).json({ message: 'Invalid booking id' });
+        }
+        res.status(500).json({ message: error.message || "Server error" });
+    }
+}
