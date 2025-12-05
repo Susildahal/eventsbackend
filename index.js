@@ -17,6 +17,7 @@ import serviceTypesRouter from './routes/servicetypes.js';
 import servicedashbordRouter from './routes/servicedashbord.js';
 import aboutRouter from './routes/about.js';
 import aboutrouter from './routes/aboutimage.js';
+import portfolioRouter from './routes/Portfolio.js';
 
 dotenv.config();
 
@@ -56,6 +57,7 @@ app.use('/api/servicetypes', serviceTypesRouter);
 app.use('/api/servicedashboard', servicedashbordRouter);
 app.use('/api/about', aboutRouter);
 app.use('/api/aboutimage', aboutrouter);
+app.use('/api/portfolio', portfolioRouter);
 // Connect to MongoDB
 connectDB();
 
