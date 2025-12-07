@@ -15,6 +15,7 @@ const BudgetSchema = new mongoose.Schema({
   icon: { type: String },
   title: { type: String },
   description: { type: String },
+  details: { type: String },
 });
 
 
@@ -39,6 +40,10 @@ const TechnologySchema = new mongoose.Schema({
   icon: { type: String },
   title: { type: String },
   description: { type: String },
+  points: [{
+    id: { type: Number },
+    point: { type: String },
+  }],
 });
 
 const OcMethodSchema = new mongoose.Schema({

@@ -53,15 +53,21 @@ export const getAllGalleryItems = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
+    const title = req.query.title;  // Changed from req.params.title to req.query.title for optional filtering
 
-    const total = await Gallery.countDocuments();
-    const items = await Gallery.find().skip(skip).limit(limit);
+    const filter = {};  // Fixed typo: filteter -> filter
+    if (title) {
+      filter.title = new RegExp(title, "i");
+    }
+
+    const total = await Gallery.countDocuments(filter);  // Apply filter to get accurate total for pagination
+    const items = await Gallery.find(filter).skip(skip).limit(limit);
 
     res.status(200).json({ data: items, pagination: { total, page, limit } });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
-};
+}
 
 // Get single gallery item
 export const getGalleryItemById = async (req, res) => {
