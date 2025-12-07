@@ -42,6 +42,19 @@ const imageFile = req.file;
     }
 };
 
+export const getPortfolioItemById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const item = await Portfolio.findById(id);
+        if (!item) {
+            return res.status(404).json({ message: "Portfolio item not found" });
+        }
+        res.status(200).json({ data: item });
+    }
+    catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
 export const getAllPortfolioItems = async (req, res) => {
     try {
         const items = await Portfolio.find();

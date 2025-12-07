@@ -18,6 +18,7 @@ import servicedashbordRouter from './routes/servicedashbord.js';
 import aboutRouter from './routes/about.js';
 import aboutrouter from './routes/aboutimage.js';
 import portfolioRouter from './routes/Portfolio.js';
+import previewRouter from './routes/preview.js';
 
 dotenv.config();
 
@@ -58,6 +59,7 @@ app.use('/api/servicedashboard', servicedashbordRouter);
 app.use('/api/about', aboutRouter);
 app.use('/api/aboutimage', aboutrouter);
 app.use('/api/portfolio', portfolioRouter);
+app.use('/api/preview', previewRouter);
 // Connect to MongoDB
 connectDB();
 

@@ -1,6 +1,10 @@
 import mongoose from "mongoose";
 
 const previewSchema = new mongoose.Schema({
+    portfolioId: {
+        type:String,
+        required: true,
+    },
     name: {
         type: String,
         required: true, 
