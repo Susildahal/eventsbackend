@@ -20,5 +20,25 @@ const portfolioSchema = new mongoose.Schema(
         },
     }, { timestamps: true }
 );
+
+
+
+const PortfolioImageSchema = new mongoose.Schema(
+    {
+      portfolioId: {
+          type:String,
+          required: true,
+      },
+        image: {
+            type: String,
+            required: true,
+        },
+        public_id: {
+            type: String,
+            required: true,
+        },
+    }, { timestamps: true }
+);
+const PortfolioImage = mongoose.model("PortfolioImage", PortfolioImageSchema);
 const Portfolio = mongoose.model("Portfolio", portfolioSchema);
-export default Portfolio;
+export { Portfolio, PortfolioImage };

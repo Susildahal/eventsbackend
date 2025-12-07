@@ -1,4 +1,4 @@
-import Portfolio from "../models/portfolio.js";
+import {Portfolio , PortfolioImage} from "../models/portfolio.js";
 import { cloudinary } from "../config/cloudinary.js";
 
 const uploadBuffer = async (buffer) => {
@@ -96,6 +96,84 @@ export const deletePortfolioItem = async (req, res) => {
             await cloudinary.uploader.destroy(item.public_id);
         }
         res.status(200).json({ message: "Portfolio item deleted" });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+
+
+
+export const  savePortfolioimage = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const imageFile = req.file;
+        if (!imageFile) {
+            return res.status(400).json({ message: "Image file is required" });
+        }
+        const uploaded = await uploadBuffer(imageFile.buffer);
+
+        const portfolioImage = new PortfolioImage({
+            portfolioId: id,
+            image: uploaded.secure_url,
+            public_id: uploaded.public_id,
+        });
+        await portfolioImage.save();
+        res.status(200).json({ imageUrl: uploaded.secure_url, public_id: uploaded.public_id });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
+
+
+ export const getimage = async (req, res) => {
+  try {
+    const {id} = req.params;
+    const data = await PortfolioImage.find({ portfolioId: id });
+    if (!data) {
+      return res.status(404).json({ message: "Image not found" });
+    }
+    res.status(200).json({ data: data });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const deleteimage = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const imageItem = await PortfolioImage.findByIdAndDelete(id);
+        if (!imageItem) {
+            return res.status(404).json({ message: "Image item not found" });
+        }
+        if (imageItem.public_id) {
+            await cloudinary.uploader.destroy(imageItem.public_id);
+        }
+        res.status(200).json({ message: "Image item deleted" });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+export const updateimage = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const imageFile = req.file;
+        if (!imageFile) {
+            return res.status(400).json({ message: "Image file is required" });
+        }
+        const imageItem = await PortfolioImage.findById(id);
+        if (!imageItem) {
+            return res.status(404).json({ message: "Image item not found" });
+        }
+        if (imageItem.public_id) {
+            await cloudinary.uploader.destroy(imageItem.public_id);
+        }
+        const uploaded = await uploadBuffer(imageFile.buffer);
+        imageItem.image = uploaded.secure_url;
+        imageItem.public_id = uploaded.public_id;
+        await imageItem.save();
+        res.status(200).json({ message: "Image item updated", data: imageItem });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
