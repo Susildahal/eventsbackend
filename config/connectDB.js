@@ -1,35 +1,28 @@
 import mongoose from "mongoose";
-
+import User from "../models/auth.js";
+import bcrypt from "bcryptjs";
 const connectDB = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URL);
     console.log("MongoDB connected successfully");
     // Ensure there's no leftover unique index on serviceid.id that causes E11000 for null
     try {
-      const coll = mongoose.connection.db.collection('venuesourcings');
-      // Try to drop the old index if it exists
-      try {
-        await coll.dropIndex('serviceid.id_1');
-        console.log('Dropped existing index serviceid.id_1');
-      } catch (dropErr) {
-        if (dropErr && (dropErr.codeName === 'IndexNotFound' || /index not found/i.test(dropErr.message))) {
-          // index not present — ignore
-        } else {
-          // Log and continue
-          console.warn('Could not drop index serviceid.id_1:', dropErr.message || dropErr);
-        }
-      }
+const user = await User.find();
 
-      // Create a non-unique index (allows nulls / duplicates)
-      try {
-        await coll.createIndex({ 'serviceid.id': 1 }, { unique: false });
-        console.log('Ensured non-unique index on serviceid.id');
-      } catch (createErr) {
-        console.warn('Could not create index serviceid.id (may already exist):', createErr.message || createErr);
+if (user.length === 0) {
+  const adminUser = new User({
+    name: process.env.username || "Admin",
+    email: process.env.email,
+    password: await bcrypt.hash(process.env.password, 10)
+  });
+  await adminUser.save();
+}
+    } catch (error) {
+      console.error("user already exist:", error);
+
+    
       }
-    } catch (idxErr) {
-      console.warn('Index adjustment skipped:', idxErr.message || idxErr);
-    }
+   
   } catch (error) {
     console.error("MongoDB connection failed:", error);
     process.exit(1);
