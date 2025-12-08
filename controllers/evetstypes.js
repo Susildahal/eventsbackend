@@ -6,6 +6,11 @@ export const savedEventTypes = async (req, res) => {
         if (!name) {
             return res.status(400).json({ message: "Event type name is required" });
         }
+
+        const existingType = await EventsTypes.findOne({ name });
+        if (existingType) {
+            return res.status(400).json({ message: `Event type with this name "${name}" already exists` });
+        }
         const newEventType = new EventsTypes({ name });
         await newEventType.save();
         res.status(201).json({ message: "Event type saved successfully", data: newEventType });
@@ -24,6 +29,20 @@ export const getAllEventTypes = async (req, res) => {
         res.status(200).json({ data: eventTypes });
     } catch (error) {
         console.error("Get All Event Types Error:", error);
+        res.status(500).json({ message: error.message || "Server error" });
+    }
+};
+
+export const getEventTypeById = async (req, res) => {
+    const { id } = req.params;  
+    try {
+        const eventType = await EventsTypes.findById(id);
+        if (!eventType) {
+            return res.status(404).json({ message: "Event type not found" });
+        }
+        res.status(200).json({ data: eventType });
+    } catch (error) {
+        console.error("Get Event Type By ID Error:", error);
         res.status(500).json({ message: error.message || "Server error" });
     }
 };
