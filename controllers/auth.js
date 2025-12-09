@@ -1,6 +1,13 @@
 import User from "../models/auth.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
+import transporter from "../config/nodemiler.js"
+
+const generateotp=() => {
+    const otp = Math.floor(100000 + Math.random() * 900000);
+    return otp.toString();
+}
+
 
 
 export const register = async (req, res) => {
@@ -40,7 +47,7 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
     // Generate JWT token
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "12h" });
+    const token = jwt.sign({ userId: user._id ,role: user.role}, process.env.JWT_SECRET, { expiresIn: "12h" });
     res.cookie("token", token, { httpOnly: true, secure: process.env.NODE_ENV === "production" });
     res.status(200).json({ message: "Login successful", token });
   } catch (error) {
@@ -87,6 +94,7 @@ export const deleteuser = async (req, res) => {
 
 export const mee = async (req, res) => {
   try {
+    console.log(generateotp());
     const userId = req.userId;
 
     const user = await User.findById(userId).select("-password");
@@ -142,3 +150,119 @@ export const updatepassowrd = async (req, res) => {
         res.status(500).json({ message: error.message || "Server error" });
     }
 };
+
+export const forgotpassword = async (req, res) => {
+
+    try {
+        const { email } = req.body;
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        const otp = generateotp();
+        const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+        user.otp = otp;
+        user.otpExpiry = otpExpiry;
+          // Send OTP via styled HTML email
+          const mailOptions = {
+              from:  process.env.SMTP_EMAIL ,
+              to: email,
+              subject: "Password Reset OTP",
+              html: `
+                  <div style="font-family: Arial, sans-serif; background: #f9f9f9; padding: 32px; border-radius: 8px; max-width: 480px; margin: 0 auto; border: 1px solid #eee;">
+                    <h2 style="color: #2d7ff9; margin-bottom: 8px;">Password Reset Request</h2>
+                    <p style="font-size: 16px; color: #333;">Hello,</p>
+                    <p style="font-size: 16px; color: #333;">We received a request to reset your password. Please use the following OTP to reset your password:</p>
+                    <div style="margin: 24px 0; text-align: center;">
+                      <span style="display: inline-block; font-size: 32px; letter-spacing: 8px; color: #fff; background: #2d7ff9; padding: 12px 32px; border-radius: 6px; font-weight: bold;">${otp}</span>
+                    </div>
+                    <p style="font-size: 15px; color: #555;">This OTP is valid for <b>10 minutes</b>. If you did not request a password reset, you can safely ignore this email.</p>
+                    <p style="font-size: 14px; color: #aaa; margin-top: 32px;">Thank you,<br>The Events Team</p>
+                  </div>
+              `,
+          };
+        await transporter.sendMail(mailOptions);
+        await user.save();
+        res.status(200).json({ message: `OTP sent to ${email}`});
+    }
+    catch (error) {
+        console.error("Forgot Password Error:", error);
+        res.status(500).json({ message: error.message || "Server error" });
+    }
+};
+
+export const checkotp = async (req, res) => {
+
+    try {
+        const { email, otp } = req.body;
+        const user = await User.findOne({ email, otp, otpExpiry: { $gt: new Date() } });
+        if (!user) {
+            return res.status(400).json({ message: "Invalid or expired OTP" });
+        }
+        user.otpExpiry = undefined;
+        await user.save();
+        res.status(200).json({ message: "OTP is valid" });
+    }
+    catch (error) {
+        console.error("Check OTP Error:", error);
+        res.status(500).json({ message: error.message || "Server error" });
+    }
+};
+
+ export const resetpassword = async (req, res) => {
+
+    try {
+        const { email, newPassword  ,otp} = req.body;
+        if(!otp || !newPassword){
+            return  res.status(400).json({ message: "OTP and new password are required" });
+        }
+        const user = await User.findOne({ email });
+      
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        if (user.otp !== otp) {
+            return res.status(400).json({ message: "Invalid OTP" });
+        }
+        user.otp = undefined;
+        const hashedPassword = await bcrypt.hash(String(newPassword), 10);
+        user.password = hashedPassword;
+        await user.save();
+        res.status(200).json({ message: "Password reset successfully" });
+    }
+    catch (error) {
+        console.error("Reset Password Error:", error);
+        res.status(500).json({ message: error.message || "Server error" });
+    }
+};
+
+export const updateuser = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, email ,password ,role } = req.body;
+        const updatedUser = await User.findByIdAndUpdate(
+            id,
+            { name, email ,password,role },
+            { new: true }
+        );;
+        if (!updatedUser) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        res.status(200).json({ message: "User updated successfully", data: updatedUser });
+    }
+    catch (error) {
+        console.error("Update User Error:", error);
+        if (error.name === 'CastError') {
+            return res.status(400).json({ message: 'Invalid user id' });
+        }
+        res.status(500).json({ message: error.message || "Server error" });
+    }
+};
+
+
+
+
+
+
+
+

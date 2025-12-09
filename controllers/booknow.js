@@ -1,11 +1,88 @@
 import Booknow from "../models/booknow.js";
+import transporter from "../config/nodemiler.js";
 
 export const createBooking = async (req, res) => {
     try {
-        const { name, email, phone, eventdate, eventtype, budgetrange, needs, contactMethod , status ,budget ,numberofpeople } = req.body;
+        const { name, email, phone, eventdate, eventtype, budgetrange, needs, contactMethod, status, budget, numberofpeople } = req.body;
         console.log(req.body);
 
-       
+        // Send booking confirmation email
+        const mailOptions = {
+            from: process.env.SMTP_EMAIL,
+            to: email,
+            subject: "🎉 Booking Confirmation - Event Received!",
+            html: `
+  <div style="
+    font-family: Arial, sans-serif;
+    background:#f4f4f4;
+    padding:25px;
+  ">
+    <div style="
+      max-width:600px;
+      margin:0 auto;
+      background:white;
+      border-radius:10px;
+      overflow:hidden;
+      box-shadow:0 3px 10px rgba(0,0,0,0.1);
+    ">
+      
+      <div style="background:#7c3aed; padding:20px; text-align:center;">
+        <h2 style="color:#fff; margin:0;">Event Booking Confirmation</h2>
+      </div>
+
+      <div style="padding:20px;">
+        <p style="font-size:15px; margin-bottom:15px;">Hello <b>${name}</b>,</p>
+        <p style="font-size:15px; margin-bottom:15px;">
+          🎉 We have successfully received your event booking!  
+        </p>
+
+        <h3 style="color:#7c3aed; margin-bottom:10px;">Booking Details:</h3>
+        <table style="width:100%; border-collapse:collapse; margin-bottom:15px;">
+          <tr>
+            <td style="padding:8px; border:1px solid #ddd;">Event Date</td>
+            <td style="padding:8px; border:1px solid #ddd;">${eventdate}</td>
+          </tr>
+          <tr>
+            <td style="padding:8px; border:1px solid #ddd;">Event Type</td>
+            <td style="padding:8px; border:1px solid #ddd;">${eventtype}</td>
+          </tr>
+          <tr>
+            <td style="padding:8px; border:1px solid #ddd;">Budget</td>
+            <td style="padding:8px; border:1px solid #ddd;">${budget}</td>
+          </tr>
+          <tr>
+            <td style="padding:8px; border:1px solid #ddd;">Number of People</td>
+            <td style="padding:8px; border:1px solid #ddd;">${numberofpeople}</td>
+          </tr>
+          <tr>
+            <td style="padding:8px; border:1px solid #ddd;">Contact Method</td>
+            <td style="padding:8px; border:1px solid #ddd;">${contactMethod}</td>
+          </tr>
+        </table>
+
+        <p style="font-size:15px;">
+          We will contact you soon with further details. 
+          If you need urgent help, feel free to reply to this email.
+        </p>
+
+        <p style="margin-top:20px; font-size:14px;">
+          Regards, <br />
+          <b>Your Events Team</b>
+        </p>
+      </div>
+
+      <div style="background:#7c3aed; text-align:center; padding:10px;">
+        <p style="color:#fff; font-size:13px; margin:0;">
+          © ${new Date().getFullYear()} Your Company | All Rights Reserved
+        </p>
+      </div>
+    </div>
+  </div>
+  `
+        };
+
+        await transporter.sendMail(mailOptions);
+
         let parsedNeeds = [];
         if (Array.isArray(needs)) {
             parsedNeeds = needs.map(n => String(n).trim()).filter(Boolean);
@@ -22,7 +99,7 @@ export const createBooking = async (req, res) => {
             parsedNeeds = Object.keys(needs).map(k => String(k).trim()).filter(Boolean);
         }
 
-        // Normalize `contactMethod` if it's a JSON string
+        // Normalize `contactMethod`
         let parsedContacts = contactMethod;
         if (typeof contactMethod === 'string') {
             try {
@@ -45,18 +122,18 @@ export const createBooking = async (req, res) => {
             numberofpeople,
             eventtype
         });
+
         await newBooking.save();
         res.status(201).json({ message: "Booking created successfully", data: newBooking });
-    }
-    catch (error) {
+
+    } catch (error) {
         console.error("Create Booking Error:", error);
-        // Handle Mongoose validation errors with 400 and a list of messages
+
         if (error.name === 'ValidationError') {
             const errors = Object.values(error.errors).map(e => ({ path: e.path, message: e.message }));
             return res.status(400).json({ message: 'Validation error', errors });
         }
 
-        // Handle CastError (invalid ObjectId or wrong type)
         if (error.name === 'CastError') {
             return res.status(400).json({ message: 'Invalid value for field', path: error.path, value: error.value });
         }
@@ -64,6 +141,7 @@ export const createBooking = async (req, res) => {
         res.status(500).json({ message: error.message || "Server error" });
     }
 };
+
 
 
 export const getAllBookings = async (req, res) => {
@@ -154,21 +232,67 @@ export const deleteBooking = async (req, res) => {
 };
 
  
- export const updateBooking = async (req, res) => {
+export const updateBooking = async (req, res) => {
     try {
         const { id } = req.params;
         const updatedData = req.body;
+
+        // Find old booking data
+        const oldBooking = await Booknow.findById(id);
+        if (!oldBooking) {
+            return res.status(404).json({ message: "Booking not found" });
+        }
+
+        // Update booking
         const updatedBooking = await Booknow.findByIdAndUpdate(id, updatedData, { new: true });
 
-        if (!updatedBooking) {
-            return res.status(404).json({ message: "Booking not found" });
-        }   
-        res.status(200).json({ message: "Booking updated successfully", data: updatedBooking });
+        // Send Email Only When Status Changed
+        if (updatedData.status && updatedData.status !== oldBooking.status) {
+
+            const mailOptions = {
+                from: process.env.SMTP_EMAIL,
+                to: updatedBooking.email,
+                subject: `📢 Booking Status Updated - ${updatedBooking.status}`,
+                html: `
+                <div style="font-family: Arial, sans-serif; background:#fafafa; padding:25px;">
+                <div style="
+                    max-width:600px;
+                    margin:0 auto;
+                    background:white;
+                    padding:20px;
+                    border-radius:8px;
+                    box-shadow:0 3px 8px rgba(0,0,0,0.1);
+                ">
+                    <h2 style="text-align:center; color:#7c3aed;">Booking Status Update</h2>
+
+                    <p>Hello <b>${updatedBooking.name}</b>,</p>
+                    <p>Your booking status has been updated to:</p>
+
+                    <h3 style="color:#7c3aed; text-align:center;">${updatedBooking.status}</h3>
+
+                    <p>For any queries, feel free to reply to this email.</p>
+
+                    <br/>
+                    <p>Regards,</p>
+                    <p><b>Events Team</b></p>
+                </div>
+                </div>
+                `
+            };
+
+            await transporter.sendMail(mailOptions);
+        }
+
+        res.status(200).json({ message: "Booking updated successfully & email sent (if status changed)", data: updatedBooking });
+
     } catch (error) {
-        console.error("Update Booking Error:", error);  
+        console.error("Update Booking Error:", error);
+
         if (error.name === 'CastError') {
             return res.status(400).json({ message: 'Invalid booking id' });
         }
+
         res.status(500).json({ message: error.message || "Server error" });
     }
 }
+

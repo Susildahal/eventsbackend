@@ -20,6 +20,7 @@ import aboutrouter from './routes/aboutimage.js';
 import portfolioRouter from './routes/Portfolio.js';
 import previewRouter from './routes/preview.js';
 import eventsDashboardRouter from './routes/eventsdashbord.js';
+import limiter from './middlewares/limit.js';
 
 dotenv.config();
 
@@ -40,6 +41,7 @@ app.use(cors(corsOptions));
 
 // Serve uploads directory as static
 app.use('/api/uploads', express.static('uploads'));
+app.use(limiter);
 
 // Sample route
 app.get('/', (req, res) => {

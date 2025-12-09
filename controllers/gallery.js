@@ -61,7 +61,7 @@ export const getAllGalleryItems = async (req, res) => {
     }
 
     const total = await Gallery.countDocuments(filter);  // Apply filter to get accurate total for pagination
-    const items = await Gallery.find(filter).skip(skip).limit(limit);
+    const items = await Gallery.find(filter).skip(skip).limit(limit).sort({ createdAt: -1 });
 
     res.status(200).json({ data: items, pagination: { total, page, limit } });
   } catch (error) {

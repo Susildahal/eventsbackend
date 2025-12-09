@@ -17,6 +17,8 @@ export const verifyToken = (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     // Support tokens that may store user id under either 'userId' or 'id'
     req.userId = decoded?.userId ?? decoded?.id;
+    req.userRole = decoded?.role;
+    console.log(req.userRole);
 
     return next();
   } catch (error) {
