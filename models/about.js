@@ -10,13 +10,7 @@ const HeroSchema = new mongoose.Schema({
   description: { type: String },
 });
 
-const BudgetSchema = new mongoose.Schema({
-  id: { type: String, required: true },
-  icon: { type: String },
-  title: { type: String },
-  description: { type: String },
-  details: { type: String },
-});
+
 
 
 
@@ -28,37 +22,12 @@ const MissionVisionSchema = new mongoose.Schema({
   
 });
 
-const SustainabilitySchema = new mongoose.Schema({
-  id: { type: String, required: true },
-  icon: { type: String },
-  title: { type: String },
-  description: { type: String },
-});
 
-const TechnologySchema = new mongoose.Schema({
-  id: { type: String, required: true },
-  icon: { type: String },
-  title: { type: String },
-  description: { type: String },
-  points: [{
-    id: { type: Number },
-    point: { type: String },
-  }],
-});
 
-const OcMethodSchema = new mongoose.Schema({
-  id: { type: String, required: true },
-  number: { type: String },
-  title: { type: String },
-  description: { type: String },
-});
 
-const WhatWeBelieveSchema = new mongoose.Schema({
-  id: { type: String, required: true },
-  icon: { type: String },
-  title: { type: String },
-  description: { type: String },
-});
+
+
+
 
 // Main Schema
 const AboutUsSchema = new mongoose.Schema(
@@ -67,10 +36,9 @@ const AboutUsSchema = new mongoose.Schema(
 
     hero: HeroSchema,
 
-    budgetsTitle: { type: String },
-    budgets: [BudgetSchema],
 
-    cta: { type: String },
+
+   
     description: { type: String },
     mainTitle: { type: String },
     title: { type: String },
@@ -79,18 +47,6 @@ const AboutUsSchema = new mongoose.Schema(
     missionDescription: { type: String },
     visionDescription: { type: String },
     missionVision: [MissionVisionSchema],
-
-
-    sustainabilityTitle: { type: String },
-    sustainability: [SustainabilitySchema],
-
-    technology: [TechnologySchema],
-
-    theOcMethodTitle: { type: String },
-    theOcMethod: [OcMethodSchema],
-
-    whatWeBelieveTitle: { type: String },
-    whatWeBelieve: [WhatWeBelieveSchema],
   },
   { timestamps: true }
 );
