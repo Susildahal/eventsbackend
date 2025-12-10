@@ -16,34 +16,6 @@ const EventBirthdaySchema = new mongoose.Schema(
                 },
             ],
         },
-        services: [
-            {
-                id: Number,
-                icon: String,
-                title: String,
-                description: String,
-            },
-        ],
-
-        concepts: [
-            {
-                id: Number,
-                icon: String,
-                title: String,
-                image: String,
-                public_id: String,
-            },
-        ],
-
-        timeline: [
-            {
-                id: Number,
-                step: String,
-                title: String,
-                description: String,
-            },
-        ],
-
         faqs: [
             {
                 id: Number,

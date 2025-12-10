@@ -113,21 +113,24 @@ export const updateVenueSourcing = async (req, res) => {
 
 export const getVenueSourcing = async (req, res) => {
   try {
-    const serviceid = req.query.serviceid;
+    const { serviceid, servicename } = req.query;
 
-    console.log("Service ID:", serviceid);
+    let filter = {};
 
-    if (!serviceid) {
-      return res.status(400).json({ message: "serviceid is required" });
+    if (serviceid) {
+      filter["serviceid.id"] = serviceid;
     }
 
-    // Correct filter for nested field
-    const filter = { "serviceid.id": serviceid };
+    if (servicename) {
+      filter["serviceid.name"] = servicename;
+    }
 
-    const data = await VenueSourcing.findOne(filter);
+    console.log("Final Filter:", filter);
 
-    if (!data) {
-      return res.status(404).json({ message: "No data found for this serviceid" });
+    const data = await VenueSourcing.find(filter);
+
+    if (!data || data.length === 0) {
+      return res.status(404).json({ message: "No data found" });
     }
 
     res.status(200).json({ data });
@@ -137,6 +140,7 @@ export const getVenueSourcing = async (req, res) => {
     res.status(500).json({ message: error.message || "Server error" });
   }
 };
+
 
 // Upload only the hero image for an existing VenueSourcing document
 export const uploadVenueImage = async (req, res) => {

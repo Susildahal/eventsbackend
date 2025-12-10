@@ -43,10 +43,9 @@ const AboutUsSchema = new mongoose.Schema(
     mainTitle: { type: String },
     title: { type: String },
 
-    missionTitle: { type: String },
+    missionandvisionTitle: { type: String },
     missionDescription: { type: String },
     visionDescription: { type: String },
-    missionVision: [MissionVisionSchema],
   },
   { timestamps: true }
 );

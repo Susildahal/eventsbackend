@@ -90,7 +90,7 @@ export const getEventBirthday = async (req, res) => {
 
         const eventBirthdays = await EventBirthday.find(filter).sort({ createdAt: -1 });
         if (eventBirthdays.length === 0) {
-            return res.status(404).json({ message: "No event birthday data found" });
+            return res.status(404).json({ message: "No data found" });
         }
        res.status(201).json({ data: eventBirthdays.map(e => e.toObject()) });
     } catch (error) {

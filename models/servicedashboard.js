@@ -11,42 +11,23 @@ const HeroSchema = new mongoose.Schema({
 });
 const IdSchema = new mongoose.Schema({
   id: { required: true, type: String   , message:"ID is required"},
+  name: { type: String },
 });
 
-const AddOnSchema = new mongoose.Schema({
-  id: { required: true, type: String },
-  title: { type: String },
-  description: { type: String },
-});
 
-const BeverageProgramSchema = new mongoose.Schema({
-  id: { required: true, type: String },
-  icon: { type: String },
-  label: { type: String },
-  description: { type: String },
-});
 
-const CriteriaSchema = new mongoose.Schema({
-  id: { required: true, type: String },
-  label: { type: String },
-  description: { type: String },
-});
 
-const TimelineSchema = new mongoose.Schema({
-  id: { required: true, type: String },
-  step: { type: String },
-  title: { type: String },
-  duration: { type: String },
-});
+
+
 
 const VenueSourcingSchema = new mongoose.Schema(
   {
     serviceid: IdSchema,
+    name: { type: String },
     hero: HeroSchema,
-    addOns: [AddOnSchema],
-    beverageProgram: [BeverageProgramSchema],
-    criteria: [CriteriaSchema],
-    timeline: [TimelineSchema],
+
+    criteria: [{ type: mongoose.Schema.Types.Mixed }],
+   
   },
   { timestamps: true }
 );
