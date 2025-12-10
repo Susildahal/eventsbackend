@@ -30,6 +30,12 @@ export const getAllFaqs = async (req, res) => {
     if (title) {
         filter.title = new RegExp(title, "i");
     }
+    const status = req.query.status;
+    if (status === "true") {
+        filter.status = true;
+    } else if (status === "false") {
+        filter.status = false;
+    }
 
     try {
         // Count documents matching the filter (important for correct pagination)
@@ -89,3 +95,30 @@ export const updateFaq = async (req, res) => {
     }
 }
 
+export const toggleFaqStatus = async (req, res) => {
+    try {
+        const faqId = req.params.id;
+        const faq = await Faq.findById(faqId);
+        if (!faq) {
+            return res.status(404).json({ message: "FAQ not found" });
+        }
+        faq.status = !faq.status;
+        await faq.save();
+        res.status(200).json({ message: "FAQ status updated successfully", data: faq });
+    }
+    catch (error) {
+        console.error("Toggle FAQ Status Error:", error);
+        res.status(500).json({ message: error.message || "Server error" });
+    }
+};
+function parseJSONField(field) {
+    if (typeof field === 'string') {
+        try {
+            return JSON.parse(field);
+        } catch (e) {
+            console.warn("Failed to parse JSON field:", field);
+            return field; // Return original if parsing fails
+        }
+    }
+    return field;
+}

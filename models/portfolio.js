@@ -6,6 +6,11 @@ const portfolioSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
+        subtitle: {
+            type: String,
+            required: true,
+        },
+        
         description: {
             type: String,
             required: true,
@@ -17,6 +22,10 @@ const portfolioSchema = new mongoose.Schema(
         public_id: {
             type: String,
             required: true,
+        },
+        status: {
+            type: Boolean,
+            default: true,
         },
     }, { timestamps: true }
 );

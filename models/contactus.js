@@ -26,6 +26,10 @@ const contactUsSchema = new mongoose.Schema({
         required: true,
         message: "Message is required"
     },
+    status: {
+        type: Boolean,
+        default: false,
+    },
 },
 {  timestamps: true, }
 );

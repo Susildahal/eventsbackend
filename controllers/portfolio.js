@@ -15,9 +15,9 @@ const uploadBuffer = async (buffer) => {
 
  export const createPortfolioItem = async (req, res) => {
     try {
-        const { title, description, } = req.body;
-        if (!title || !description) {
-            return res.status(400).json({ message: "Title and description are required" });
+        const { title, description, subtitle } = req.body;
+        if (!title || !description || !subtitle) {
+            return res.status(400).json({ message: "Title, subtitle and description are required" });
         }
 const imageFile = req.file;
         let imageUrl = "";
@@ -31,6 +31,7 @@ const imageFile = req.file;
         }
         const item = new Portfolio({
             title,
+            subtitle,
             description,    
             image: imageUrl,
             public_id: uploaded.public_id,
@@ -56,8 +57,17 @@ export const getPortfolioItemById = async (req, res) => {
     }
 };
 export const getAllPortfolioItems = async (req, res) => {
+    const status = req.query.status;
+    const filter = {};
+    if (status === "true") {
+        filter.status = true;
+    }
+    else if (status === "false") {
+        filter.status = false;
+    }
+
     try {
-        const items = await Portfolio.find();
+        const items = await Portfolio.find(filter).sort({ createdAt: -1 });
         res.status(200).json({ data: items });
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -67,9 +77,9 @@ export const getAllPortfolioItems = async (req, res) => {
 export const updatePortfolioItem = async (req, res) => {
     try {
         const { id } = req.params;
-        const { title, description, image } = req.body;
-        if (!title || !description) {
-            return res.status(400).json({ message: "Title and description are required" });
+        const { title, description, image  ,subtitle} = req.body;
+        if (!title || !description || !subtitle) {
+            return res.status(400).json({ message: "Title, subtitle and description are required" });
         }
 
         const item = await Portfolio.findById(id);
@@ -77,7 +87,7 @@ export const updatePortfolioItem = async (req, res) => {
             return res.status(404).json({ message: "Portfolio item not found" });
         }
 
-        let updateData = { title, description };
+        let updateData = { title, description, subtitle };
 
         if (req.file) {
             // Delete old image
@@ -187,6 +197,29 @@ export const updateimage = async (req, res) => {
         imageItem.public_id = uploaded.public_id;
         await imageItem.save();
         res.status(200).json({ message: "Image item updated", data: imageItem });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+const parseJSONField = (field) => {
+    try {
+        return JSON.parse(field);
+    } catch {
+        return field;
+    }
+};
+
+ export const updatestatus = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const item = await Portfolio.findById(id);
+        if (!item) {
+            return res.status(404).json({ message: "Portfolio item not found" });
+        }
+        item.status = !item.status;
+        await item.save();
+        res.status(200).json({ message: "Portfolio item status updated", data: item });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

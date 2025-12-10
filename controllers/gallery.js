@@ -53,21 +53,39 @@ export const getAllGalleryItems = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
-    const title = req.query.title;  // Changed from req.params.title to req.query.title for optional filtering
 
-    const filter = {};  // Fixed typo: filteter -> filter
+    const title = req.query.title || "";
+    const status = req.query.status;
+
+    let filter = {};
+
+    // Title filter
     if (title) {
       filter.title = new RegExp(title, "i");
     }
 
-    const total = await Gallery.countDocuments(filter);  // Apply filter to get accurate total for pagination
-    const items = await Gallery.find(filter).skip(skip).limit(limit).sort({ createdAt: -1 });
+    // Status filter (only if passed)
+    if (status === "true") {
+      filter.status = true;
+    } else if (status === "false") {
+      filter.status = false;
+    }
 
-    res.status(200).json({ data: items, pagination: { total, page, limit } });
+    const total = await Gallery.countDocuments(filter);
+    const items = await Gallery.find(filter)
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      data: items,
+      pagination: { total, page, limit },
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
-}
+};
+
 
 // Get single gallery item
 export const getGalleryItemById = async (req, res) => {
@@ -160,6 +178,25 @@ export const deleteGalleryItem = async (req, res) => {
 
     res.status(200).json({ message: "Gallery item deleted" });
   } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+ export const toggleGalleryItemStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id || id === "undefined" || !mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ message: "Invalid or missing id parameter" });
+    }
+    const item = await Gallery.findById(id);
+    if (!item) {
+      return res.status(404).json({ message: "Gallery item not found" });
+    }
+    item.status = !item.status;
+    await item.save();
+    res.status(200).json({ message: "Gallery item status updated", data: item });
+  }
+  catch (error) {
     res.status(500).json({ message: error.message });
   }
 };

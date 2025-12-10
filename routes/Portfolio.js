@@ -1,4 +1,4 @@
-import {createPortfolioItem, getAllPortfolioItems, updatePortfolioItem, deletePortfolioItem ,savePortfolioimage ,getimage ,deleteimage , updateimage ,getPortfolioItemById} from '../controllers/portfolio.js';
+import {createPortfolioItem, getAllPortfolioItems, updatePortfolioItem, deletePortfolioItem ,savePortfolioimage ,getimage ,deleteimage , updateimage ,getPortfolioItemById ,updatestatus} from '../controllers/portfolio.js';
 import express from 'express';
 import upload from '../middlewares/upload.js';
 const portfolioRouter = express.Router();
@@ -12,5 +12,6 @@ portfolioRouter.post("/image/:id/", upload.single('image'), savePortfolioimage);
 portfolioRouter.get("/image/:id/", getimage);
 portfolioRouter.delete("/image/:id/", deleteimage);
 portfolioRouter.put("/image/:id/", upload.single('image'), updateimage);
+portfolioRouter.patch("/:id", updatestatus);
 
 export default portfolioRouter;

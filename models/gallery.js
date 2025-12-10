@@ -11,6 +11,11 @@ const gallerySchema = new mongoose.Schema(
             type: String,
             required: true,
         },
+        status: {
+            type: Boolean,
+            default: true,
+        },
+        
         public_id: {
             type: String,
             required: true,

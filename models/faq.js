@@ -19,6 +19,10 @@ const faqSchema = new mongoose.Schema({
         enum: ['General', 'Cancellation', 'Premits', 'Catering'],
         message : '{VALUE} is not supported',
     },
+    status: {
+        type: Boolean,
+        default: true,
+    },
     
 
 },

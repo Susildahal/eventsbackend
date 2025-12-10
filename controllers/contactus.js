@@ -29,7 +29,7 @@ export const submitContactForm = async (req, res) => {
     const skip = (page - 1) * limit;
 
     try {
-        const contacts = await ContactUs.find().skip(skip).limit(limit);
+        const contacts = await ContactUs.find().skip(skip).limit(limit).sort({ createdAt: -1 });
         const total = await ContactUs.countDocuments();
         res.status(200).json({ data: contacts  , pagination: { page: page , limit: limit , total: total } });
     }
@@ -71,5 +71,21 @@ export const deleteContact = async (req, res) => {
 };
  
 
+ export const patchContactStatus = async (req, res) => {
+const {id} = req.params;
+    try {
+       
+        const { status } = req.body;
+        const updatedContact = await ContactUs.findByIdAndUpdate(id, { status }, { new: true });
+        if (!updatedContact) {
+            return res.status(404).json({ message: "Contact not found" });
+        }
+        res.status(200).json({ message: "Contact status updated successfully", contact: updatedContact });
+    }
+    catch (error) {
+        console.error("Update Contact Status Error:", error);
+        res.status(500).json({ message: error.message || "Server error" });
+    }
+};
 
 
