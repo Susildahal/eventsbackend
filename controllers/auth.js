@@ -94,7 +94,6 @@ export const deleteuser = async (req, res) => {
 
 export const mee = async (req, res) => {
   try {
-    console.log(generateotp());
     const userId = req.userId;
 
     const user = await User.findById(userId).select("-password");

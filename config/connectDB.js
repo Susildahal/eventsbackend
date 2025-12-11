@@ -13,6 +13,7 @@ if (user.length === 0) {
   const adminUser = new User({
     name: process.env.username || "Admin",
     email: process.env.email,
+    role: process.env.role || "admin",
     password: await bcrypt.hash(process.env.password, 10)
   });
   await adminUser.save();
