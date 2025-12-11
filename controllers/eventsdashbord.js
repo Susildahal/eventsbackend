@@ -3,7 +3,7 @@ import { cloudinary } from "../config/cloudinary.js";
 
 const uploadBuffer = async (buffer) => {
   const result = await new Promise((resolve, reject) => {
-    const stream = cloudinary.uploader.upload_stream({ folder: 'events-dashboard', resource_type: 'image' }, (err, res) => {
+    const stream = cloudinary.uploader.upload_stream({ folder: 'events', resource_type: 'image' }, (err, res) => {
       if (err) return reject(err);
       resolve(res);
     });

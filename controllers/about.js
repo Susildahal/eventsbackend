@@ -26,7 +26,7 @@ export const createAboutUs = async (req, res) => {
     } else {
       // Fallback: parse individual fields if no 'data' field
       body = { ...req.body };
-      ['hero', 'missionVision', 'whatWeBelieve', 'theOcMethod', 'sustainability', 'technology', 'budgets', 'images'].forEach(k => {
+      ['hero', 'missionVision', 'images'].forEach(k => {
         if (body[k]) body[k] = parseJSONField(body[k]);
       });
     }
@@ -73,7 +73,7 @@ export const updateAboutUs = async (req, res) => {
     } else {
       // Fallback: parse individual fields if no 'data' field
       body = { ...req.body };
-      ['hero', 'missionVision', 'whatWeBelieve', 'theOcMethod', 'sustainability', 'technology', 'budgets', 'images'].forEach(k => {
+      ['hero', 'missionVision', 'images'].forEach(k => {
         if (body[k]) body[k] = parseJSONField(body[k]);
       });
     }

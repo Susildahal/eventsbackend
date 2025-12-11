@@ -12,7 +12,7 @@ const generateotp=() => {
 
 export const register = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password , phone, address} = req.body;
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -25,6 +25,9 @@ export const register = async (req, res) => {
       name,
       email,
       password: hashedPassword,
+      address,
+      phone
+
     });
     await newUser.save();
     res.status(201).json({ message: "User registered successfully" });
@@ -238,10 +241,10 @@ export const checkotp = async (req, res) => {
 export const updateuser = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, email ,password ,role } = req.body;
+        const { name, email ,password ,role ,address , phone } = req.body;
         const updatedUser = await User.findByIdAndUpdate(
             id,
-            { name, email ,password,role },
+            { name, email ,password,role , address , phone },
             { new: true }
         );;
         if (!updatedUser) {
@@ -257,6 +260,27 @@ export const updateuser = async (req, res) => {
         res.status(500).json({ message: error.message || "Server error" });
     }
 };
+export const updateuserstatus = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const user = await User.findById(id);
+        if (!user) {  
+            return res.status(404).json({ message: "User not found" });
+        }
+        user.status = !user.status;
+        await user.save();
+        res.status(200).json({ message: "User status updated successfully", data: user });
+    }
+    catch (error) {
+        console.error("Update User Status Error:", error);
+        if (error.name === 'CastError') {
+            return res.status(400).json({ message: 'Invalid user id' });
+        }
+        res.status(500).json({ message: error.message || "Server error" });
+    }
+};
+
+
 
 
 

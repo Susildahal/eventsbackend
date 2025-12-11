@@ -30,8 +30,10 @@ export const submitContactForm = async (req, res) => {
 
     try {
         const contacts = await ContactUs.find().skip(skip).limit(limit).sort({ createdAt: -1 });
+        const totalunread = await ContactUs.countDocuments({ status: false });
+        
         const total = await ContactUs.countDocuments();
-        res.status(200).json({ data: contacts  , pagination: { page: page , limit: limit , total: total } });
+        res.status(200).json({ data: contacts  , unread: totalunread, pagination: { page: page , limit: limit , total: total } });
     }
     catch (error) {
         console.error("Get Contacts Error:", error);

@@ -20,7 +20,7 @@ export const createVenueSourcing = async (req, res) => {
     if (imageFile && imageFile.buffer) {
       const result = await new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
-          { folder: "ngo-uploads", resource_type: "auto" },
+          { folder: "events", resource_type: "auto" },
           (error, result) => {
             if (error) return reject(error);
             resolve(result);
@@ -58,7 +58,7 @@ export const updateVenueSourcing = async (req, res) => {
     if (imageFile && imageFile.buffer) {
       const result = await new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
-          { folder: "ngo-uploads", resource_type: "auto" },
+          { folder: "events", resource_type: "auto" },
           (error, result) => {
             if (error) return reject(error);
             resolve(result);
@@ -161,7 +161,7 @@ export const uploadVenueImage = async (req, res) => {
     // Upload new image to Cloudinary
     const result = await new Promise((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
-        { folder: "ngo-uploads", resource_type: "auto" },
+        { folder: "events", resource_type: "auto" },
         (error, result) => {
           if (error) return reject(error);
           resolve(result);

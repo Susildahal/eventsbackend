@@ -26,6 +26,17 @@ const userSchema = new mongoose.Schema({
     otpExpiry: {
         type: Date,
     },
+    status:{
+        type:Boolean,
+        default:true,
+    },
+    phone: {
+        type: String,
+    },
+    address: {
+        type: String,
+    },
+
 
 
     userid: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },

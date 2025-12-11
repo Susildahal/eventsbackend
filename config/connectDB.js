@@ -14,14 +14,16 @@ if (user.length === 0) {
     name: process.env.username || "Admin",
     email: process.env.email,
     role: process.env.role || "admin",
+    address: process.env.address,
+    phone: process.env.phone,
+    status:true,
+    
     password: await bcrypt.hash(process.env.password, 10)
   });
   await adminUser.save();
 }
     } catch (error) {
       console.error("user already exist:", error);
-
-    
       }
    
   } catch (error) {
