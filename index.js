@@ -3,6 +3,7 @@ import cors from 'cors';
 import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
 import connectDB from './config/connectDB.js';
+import  axios from 'axios';
 import { configureCloudinary } from './config/cloudinary.js';
 import userrouter from './routes/auth.js';
 import eventrouter from './routes/events.js';
@@ -22,6 +23,7 @@ import previewRouter from './routes/preview.js';
 import eventsDashboardRouter from './routes/eventsdashbord.js';
 import limiter from './middlewares/limit.js';
 
+
 dotenv.config();
 
 // Initialize Express app
@@ -31,7 +33,7 @@ configureCloudinary();
 const port = process.env.PORT || 8000;
 console.log("PORT:", process.env.PORT);
 const corsOptions = {
-  origin: ['http://localhost:3000', 'http://192.168.10.79:3000'],
+  origin: ['http://localhost:3000', 'http://192.168.10.79:3000' ,'https://eventfrontend-ivory.vercel.app'],
   optionsSuccessStatus: 200     
 };
 
@@ -79,7 +81,23 @@ app.use((err, req, res, next) => {
     return res.status(400).json({ message: 'Invalid value', path: err.path, value: err.value });
   }
   res.status(err.status || 500).json({ message: err.message || 'Server error' });
-});
+});  
+//ping api 
+app.get('/api/ping', (req, res) => {
+  res.status(200).json({ message: 'pong' });
+}
+);
+setInterval(async () => {
+  console.log("Automatic task running...");
+
+  try {
+    const res = await axios.get("http://localhost:8000/api/ping");
+    console.log("Ping success:", res.data);
+  } catch (error) {
+    console.log("Ping failed:", error.message);
+  }
+}, 15 * 60 * 1000); // Ping every 15 minutes
+
 // Start the server
 app.listen(port,"0.0.0.0", () => {
   console.log(`Server is running on port ${port}`);
