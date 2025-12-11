@@ -91,7 +91,7 @@ setInterval(async () => {
   console.log("Automatic task running...");
 
   try {
-    const res = await axios.get("http://localhost:8000/api/ping");
+    const res = await axios.get("https://eventsbackend-drzr.onrender.com/api/ping");
     console.log("Ping success:", res.data);
   } catch (error) {
     console.log("Ping failed:", error.message);
