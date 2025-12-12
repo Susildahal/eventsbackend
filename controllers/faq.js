@@ -42,7 +42,7 @@ export const getAllFaqs = async (req, res) => {
         const totalFaqs = await Faq.countDocuments(filter);
 
         // Fetch page of results
-        const faqs = await Faq.find(filter).skip(skip).limit(limit);
+        const faqs = await Faq.find(filter).skip(skip).limit(limit).sort({ createdAt: -1 });
         res.status(200).json({ data: faqs, pagination: { page, limit, total: totalFaqs } });
     }
     catch (error) {

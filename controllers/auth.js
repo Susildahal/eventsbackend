@@ -2,8 +2,9 @@ import User from "../models/auth.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import transporter from "../config/nodemiler.js"
+import { v2 as cloudinary } from "cloudinary";
 
-const generateotp=() => {
+const generateotp = () => {
     const otp = Math.floor(100000 + Math.random() * 900000);
     return otp.toString();
 }
@@ -11,59 +12,59 @@ const generateotp=() => {
 
 
 export const register = async (req, res) => {
-  try {
-    const { name, email, password , phone, address} = req.body;
-    // Check if user already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
-    }
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-    // Create new user
-    const newUser = new User({
-      name,
-      email,
-      password: hashedPassword,
-      address,
-      phone
+    try {
+        const { name, email, password, phone, address } = req.body;
+        // Check if user already exists
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({ message: "User already exists" });
+        }
+        // Hash password
+        const hashedPassword = await bcrypt.hash(password, 10);
+        // Create new user
+        const newUser = new User({
+            name,
+            email,
+            password: hashedPassword,
+            address,
+            phone
 
-    });
-    await newUser.save();
-    res.status(201).json({ message: "User registered successfully" });
-  } catch (error) {
-    res.status(500).json({ message: "Server error" });
-  }
+        });
+        await newUser.save();
+        res.status(201).json({ message: "User registered successfully" });
+    } catch (error) {
+        res.status(500).json({ message: "Server error" });
+    }
 };
 
 export const login = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    // Find user by email
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ message: "Invalid credentials" });
+    try {
+        const { email, password } = req.body;
+        // Find user by email
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(400).json({ message: "Invalid credentials" });
+        }
+        // Compare passwords
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ message: "Invalid credentials" });
+        }
+        // Generate JWT token
+        const token = jwt.sign({ userId: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "12h" });
+        res.cookie("token", token, { httpOnly: true, secure: process.env.NODE_ENV === "production" });
+        res.status(200).json({ message: "Login successful", token });
+    } catch (error) {
+        res.status(500).json({ message: "Server error" });
     }
-    // Compare passwords
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ message: "Invalid credentials" });
-    }
-    // Generate JWT token
-    const token = jwt.sign({ userId: user._id ,role: user.role}, process.env.JWT_SECRET, { expiresIn: "12h" });
-    res.cookie("token", token, { httpOnly: true, secure: process.env.NODE_ENV === "production" });
-    res.status(200).json({ message: "Login successful", token });
-  } catch (error) {
-    res.status(500).json({ message: "Server error" });
-  }
 };
 export const logout = (req, res) => {
-  res.clearCookie("token");
-  res.status(200).json({ message: "Logout successful" });
+    res.clearCookie("token");
+    res.status(200).json({ message: "Logout successful" });
 };
 
 
- export const getallusers = async (req, res) => {
+export const getallusers = async (req, res) => {
 
     try {
         const users = await User.find().select("-password").sort({ createdAt: -1 });
@@ -78,7 +79,7 @@ export const deleteuser = async (req, res) => {
 
     try {
         const { id } = req.params;
-        const deletedUser = await User.findByIdAndDelete(id); 
+        const deletedUser = await User.findByIdAndDelete(id);
         if (!deletedUser) {
 
             return res.status(404).json({ message: "User not found" });
@@ -96,18 +97,18 @@ export const deleteuser = async (req, res) => {
 };
 
 export const mee = async (req, res) => {
-  try {
-    const userId = req.userId;
+    try {
+        const userId = req.userId;
 
-    const user = await User.findById(userId).select("-password");
-    if (!user) {
-      return res.status(401).json({ message: "User not found" });
+        const user = await User.findById(userId).select("-password");
+        if (!user) {
+            return res.status(401).json({ message: "User not found" });
+        }
+
+        res.status(200).json({ user });
+    } catch (error) {
+        res.status(500).json({ message: error.message || "Server error" });
     }
-    
-    res.status(200).json({ user });
-  } catch (error) {
-    res.status(500).json({ message: error.message || "Server error" });
-  }
 }
 
 
@@ -120,25 +121,25 @@ export const updatepassowrd = async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
-    // Validate input
-    if (!oldPassword || !password) {
-      return res.status(400).json({ message: 'Both oldPassword and password are required' });
-    }
+        // Validate input
+        if (!oldPassword || !password) {
+            return res.status(400).json({ message: 'Both oldPassword and password are required' });
+        }
 
-    // Ensure values are strings to avoid bcrypt errors
-    const oldPwdStr = String(oldPassword);
+        // Ensure values are strings to avoid bcrypt errors
+        const oldPwdStr = String(oldPassword);
 
-    const updatepassword = await bcrypt.compare(oldPwdStr, user.password);
+        const updatepassword = await bcrypt.compare(oldPwdStr, user.password);
         if (!updatepassword) {
             return res.status(400).json({ message: "Old password is incorrect" });
         }
-    // Hash the new password and update
-    const hashedPassword = await bcrypt.hash(String(password), 10);
-    const updatedUser = await User.findByIdAndUpdate(
-      id,
-      { password: hashedPassword },
-      { new: true }
-    );
+        // Hash the new password and update
+        const hashedPassword = await bcrypt.hash(String(password), 10);
+        const updatedUser = await User.findByIdAndUpdate(
+            id,
+            { password: hashedPassword },
+            { new: true }
+        );
         if (!updatedUser) {
             return res.status(404).json({ message: "User not found" });
         }
@@ -148,7 +149,7 @@ export const updatepassowrd = async (req, res) => {
         console.error("Update Password Error:", error);
         if (error.name === 'CastError') {
             return res.status(400).json({ message: 'Invalid user id' });
-        } 
+        }
         res.status(500).json({ message: error.message || "Server error" });
     }
 };
@@ -165,12 +166,12 @@ export const forgotpassword = async (req, res) => {
         const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
         user.otp = otp;
         user.otpExpiry = otpExpiry;
-          // Send OTP via styled HTML email
-          const mailOptions = {
-              from:  process.env.SMTP_EMAIL ,
-              to: email,
-              subject: "Password Reset OTP",
-              html: `
+        // Send OTP via styled HTML email
+        const mailOptions = {
+            from: process.env.SMTP_EMAIL,
+            to: email,
+            subject: "Password Reset OTP",
+            html: `
                   <div style="font-family: Arial, sans-serif; background: #f9f9f9; padding: 32px; border-radius: 8px; max-width: 480px; margin: 0 auto; border: 1px solid #eee;">
                     <h2 style="color: #2d7ff9; margin-bottom: 8px;">Password Reset Request</h2>
                     <p style="font-size: 16px; color: #333;">Hello,</p>
@@ -182,10 +183,10 @@ export const forgotpassword = async (req, res) => {
                     <p style="font-size: 14px; color: #aaa; margin-top: 32px;">Thank you,<br>The Events Team</p>
                   </div>
               `,
-          };
+        };
         await transporter.sendMail(mailOptions);
         await user.save();
-        res.status(200).json({ message: `OTP sent to ${email}`});
+        res.status(200).json({ message: `OTP sent to ${email}` });
     }
     catch (error) {
         console.error("Forgot Password Error:", error);
@@ -211,15 +212,15 @@ export const checkotp = async (req, res) => {
     }
 };
 
- export const resetpassword = async (req, res) => {
+export const resetpassword = async (req, res) => {
 
     try {
-        const { email, newPassword  ,otp} = req.body;
-        if(!otp || !newPassword){
-            return  res.status(400).json({ message: "OTP and new password are required" });
+        const { email, newPassword, otp } = req.body;
+        if (!otp || !newPassword) {
+            return res.status(400).json({ message: "OTP and new password are required" });
         }
         const user = await User.findOne({ email });
-      
+
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
@@ -241,10 +242,10 @@ export const checkotp = async (req, res) => {
 export const updateuser = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, email ,password ,role ,address , phone } = req.body;
+        const { name, email, password, role, address, phone } = req.body;
         const updatedUser = await User.findByIdAndUpdate(
             id,
-            { name, email ,password,role , address , phone },
+            { name, email, password, role, address, phone },
             { new: true }
         );;
         if (!updatedUser) {
@@ -264,7 +265,7 @@ export const updateuserstatus = async (req, res) => {
     try {
         const { id } = req.params;
         const user = await User.findById(id);
-        if (!user) {  
+        if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
         user.status = !user.status;
@@ -284,8 +285,71 @@ export const updateuserstatus = async (req, res) => {
 
 
 
+export const profile = async (req, res) => {
+  const { id } = req.params;
+  const { name, email, phone, address } = req.body;
 
+  try {
+    // 1. Find user
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
+    let imageUrl = user.profilePicture; 
+    let publicId = user.publicId;
 
+    // 2. If a new file is uploaded → upload to Cloudinary
+    if (req.file) {
+      // Delete old image on Cloudinary if exists
+      if (publicId) {
+        await cloudinary.uploader.destroy(publicId);
+      }
 
+      // Upload new image
+      const result = await new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: "events", resource_type: "auto" },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        );
+        stream.end(req.file.buffer);
+      });
+
+      imageUrl = result.secure_url;
+      publicId = result.public_id;
+    }
+
+    // 3. Update user profile
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
+      {
+        name,
+        email,
+        phone,
+        address,
+        profilePicture: imageUrl,
+        publicId: publicId,
+      },
+      { new: true }
+    );
+
+    return res.status(200).json({
+      message: "Profile updated successfully",
+      data: updatedUser,
+    });
+  } catch (error) {
+    console.error("Profile Update Error:", error);
+
+    if (error.name === "CastError") {
+      return res.status(400).json({ message: "Invalid user ID" });
+    }
+
+    res.status(500).json({
+      message: error.message || "Internal Server Error",
+    });
+  }
+};
 

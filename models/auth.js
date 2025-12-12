@@ -36,7 +36,12 @@ const userSchema = new mongoose.Schema({
     address: {
         type: String,
     },
-
+   profilePicture: {
+       type: String,
+   },
+    publicId: {
+        type: String,
+    },
 
 
     userid: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
