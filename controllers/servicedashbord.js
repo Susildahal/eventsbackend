@@ -121,9 +121,10 @@ export const getVenueSourcing = async (req, res) => {
       filter["serviceid.id"] = serviceid;
     }
 
-    if (servicename) {
-      filter["serviceid.name"] = servicename;
-    }
+if (servicename) {
+  filter["serviceid.name"] = new RegExp(`^${servicename}$`, "i");
+}
+
 
     console.log("Final Filter:", filter);
 
