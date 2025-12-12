@@ -8,7 +8,7 @@ export const createBooking = async (req, res) => {
 
         // Send booking confirmation email
         const mailOptions = {
-            from: process.env.SMTP_EMAIL,
+            from: `"Events Team" <${process.env.SMTP_EMAIL}>`,
             to: email,
             subject: "🎉 Booking Confirmation - Event Received!",
             html: `
@@ -81,7 +81,14 @@ export const createBooking = async (req, res) => {
   `
         };
 
-        await transporter.sendMail(mailOptions);
+        // Send email with error handling
+        try {
+            const info = await transporter.sendMail(mailOptions);
+            console.log("Booking confirmation email sent:", info.messageId);
+        } catch (emailError) {
+            console.error("Failed to send booking confirmation email:", emailError);
+            // Continue with booking even if email fails
+        }
 
         let parsedNeeds = [];
         if (Array.isArray(needs)) {
@@ -250,7 +257,7 @@ export const updateBooking = async (req, res) => {
         if (updatedData.status && updatedData.status !== oldBooking.status) {
 
             const mailOptions = {
-                from: process.env.SMTP_EMAIL,
+                from: `"Events Team" <${process.env.SMTP_EMAIL}>`,
                 to: updatedBooking.email,
                 subject: `📢 Booking Status Updated - ${updatedBooking.status}`,
                 html: `
@@ -280,10 +287,16 @@ export const updateBooking = async (req, res) => {
                 `
             };
 
-            await transporter.sendMail(mailOptions);
+            try {
+                const info = await transporter.sendMail(mailOptions);
+                console.log("Status update email sent:", info.messageId);
+            } catch (emailError) {
+                console.error("Failed to send status update email:", emailError);
+                // Continue even if email fails
+            }
         }
 
-        res.status(200).json({ message: "Booking updated successfully & email sent (if status changed)", data: updatedBooking });
+        res.status(200).json({ message: "Booking updated successfully", data: updatedBooking });
 
     } catch (error) {
         console.error("Update Booking Error:", error);

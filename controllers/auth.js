@@ -168,7 +168,7 @@ export const forgotpassword = async (req, res) => {
         user.otpExpiry = otpExpiry;
         // Send OTP via styled HTML email
         const mailOptions = {
-            from: process.env.SMTP_EMAIL,
+            from: `"Events Team" <${process.env.SMTP_EMAIL}>`,
             to: email,
             subject: "Password Reset OTP",
             html: `
@@ -184,9 +184,23 @@ export const forgotpassword = async (req, res) => {
                   </div>
               `,
         };
-        await transporter.sendMail(mailOptions);
+        
+        // Save user first before sending email
         await user.save();
-        res.status(200).json({ message: `OTP sent to ${email}` });
+        
+        // Send email with better error handling
+        try {
+            const info = await transporter.sendMail(mailOptions);
+            console.log("Email sent successfully:", info.messageId);
+            res.status(200).json({ message: `OTP sent to ${email}` });
+        } catch (emailError) {
+            console.error("Email sending failed:", emailError);
+            // Even if email fails, OTP is saved, inform user
+            res.status(200).json({ 
+                message: `OTP generated but email delivery may be delayed. Please check your spam folder.`,
+                warning: "Email service experiencing issues"
+            });
+        }
     }
     catch (error) {
         console.error("Forgot Password Error:", error);
