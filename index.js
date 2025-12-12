@@ -50,6 +50,81 @@ app.get('/', (req, res) => {
   res.send('Hello World!');
 });
 
+// Email configuration test endpoint
+app.get('/api/test-email', async (req, res) => {
+  try {
+    console.log('=== Testing Email Configuration ===');
+    console.log('SMTP_HOST:', process.env.SMTP_HOST);
+    console.log('SMTP_PORT:', process.env.SMTP_PORT);
+    console.log('SMTP_USER:', process.env.SMTP_USER);
+    console.log('SMTP_EMAIL:', process.env.SMTP_EMAIL);
+    console.log('SMTP_PASS:', process.env.SMTP_PASS ? '***SET***' : '❌ MISSING');
+    
+    // Dynamic import of transporter
+    const transporter = (await import('./config/nodemiler.js')).default;
+    
+    // Verify SMTP connection
+    console.log('Verifying SMTP connection...');
+    await transporter.verify();
+    console.log('✅ SMTP connection successful!');
+    
+    // Send test email
+    console.log('Sending test email...');
+    const info = await transporter.sendMail({
+      from: `"Events Team Test" <${process.env.SMTP_EMAIL}>`,
+      to: process.env.SMTP_EMAIL,
+      subject: "✅ Test Email - " + new Date().toLocaleString(),
+      html: `
+        <div style="font-family: Arial; padding: 20px; background: #f5f5f5;">
+          <div style="background: white; padding: 20px; border-radius: 8px; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #7c3aed;">✅ Email Configuration Test Successful!</h2>
+            <p>Your email system is working correctly on Render!</p>
+            <hr/>
+            <p><strong>Configuration:</strong></p>
+            <ul>
+              <li>Host: ${process.env.SMTP_HOST}</li>
+              <li>Port: ${process.env.SMTP_PORT}</li>
+              <li>User: ${process.env.SMTP_USER}</li>
+              <li>From: ${process.env.SMTP_EMAIL}</li>
+            </ul>
+            <p><strong>Time:</strong> ${new Date().toISOString()}</p>
+            <p><strong>Message ID:</strong> ${info.messageId}</p>
+          </div>
+        </div>
+      `
+    });
+    
+    console.log('✅ Test email sent successfully!');
+    console.log('Message ID:', info.messageId);
+    
+    res.status(200).json({
+      success: true,
+      message: 'Email sent successfully! Check your inbox.',
+      messageId: info.messageId,
+      config: {
+        host: process.env.SMTP_HOST,
+        port: process.env.SMTP_PORT,
+        user: process.env.SMTP_USER,
+        from: process.env.SMTP_EMAIL
+      }
+    });
+  } catch (error) {
+    console.error('❌ Email test failed:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      code: error.code,
+      command: error.command,
+      config: {
+        host: process.env.SMTP_HOST,
+        port: process.env.SMTP_PORT,
+        user: process.env.SMTP_USER,
+        from: process.env.SMTP_EMAIL
+      }
+    });
+  }
+});
+
 app.use('/api/users', userrouter);
 app.use('/api/events', eventrouter);
 app.use('/api/services', servicerouter);
