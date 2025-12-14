@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 
+
 export const verifyToken = (req, res, next) => {
   try {
     // Get token from Authorization header (handle different header names and missing header)
@@ -26,13 +27,10 @@ export const verifyToken = (req, res, next) => {
   }
 };
 
-
-
- export const isAdmin = (req, res, next) => {
+export const isAdmin = (req, res, next) => {
   if (req.userRole === "admin") {
     next();
-  }
-  else {
+  } else {
     return res.status(403).json({ message: "Access denied. Admins only." });
   }
  

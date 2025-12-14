@@ -37,27 +37,62 @@ export const register = async (req, res) => {
     }
 };
 
+
+
 export const login = async (req, res) => {
-    try {
-        const { email, password } = req.body;
-        // Find user by email
-        const user = await User.findOne({ email });
-        if (!user) {
-            return res.status(400).json({ message: "Invalid credentials" });
-        }
-        // Compare passwords
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            return res.status(400).json({ message: "Invalid credentials" });
-        }
-        // Generate JWT token
-        const token = jwt.sign({ userId: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "12h" });
-        res.cookie("token", token, { httpOnly: true, secure: process.env.NODE_ENV === "production" });
-        res.status(200).json({ message: "Login successful", token });
-    } catch (error) {
-        res.status(500).json({ message: "Server error" });
+  try {
+    const { email, password, rememberMe } = req.body;
+
+    // 1️⃣ Find user
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: "Invalid credentials" });
     }
+
+    // 2️⃣ Compare password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    // 3️⃣ Token expiry logic (FIXED)
+    const expiresIn = rememberMe ? "7d" : "1h";
+
+    // 4️⃣ Generate JWT
+    const token = jwt.sign(
+      { userId: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn }
+    );
+
+    // 5️⃣ Set cookie (FIXED & SAFE)
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: rememberMe
+        ? 7 * 24 * 60 * 60 * 1000 // 7 days
+        : 60 * 60 * 1000,        // 1 hour
+    });
+
+    // 6️⃣ Response
+    return res.status(200).json({
+      message: "Login successful",
+      token, // optional (keep if frontend uses it)
+      user: {
+        id: user._id,
+        email: user.email,
+        role: user.role,
+      },
+    });
+
+  } catch (error) {
+    console.error("Login error:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
 };
+
+
 export const logout = (req, res) => {
     res.clearCookie("token");
     res.status(200).json({ message: "Logout successful" });
@@ -297,8 +332,6 @@ export const updateuserstatus = async (req, res) => {
 
 
 
-
-
 export const profile = async (req, res) => {
   const { id } = req.params;
   const { name, email, phone, address } = req.body;
@@ -366,4 +399,47 @@ export const profile = async (req, res) => {
     });
   }
 };
+
+export const refreshToken = async (req, res) => {
+  try {
+    const userID = req.body.userId;
+    console.log( "user id is ", userID);
+
+    const user = await User.findById(userID);
+
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const refreshToken = user.refreshToken;
+
+    // If refresh token missing → cannot refresh → logout
+    if (!refreshToken) {
+      return res.status(403).json({ message: "No refresh token, please login again" });
+    }
+
+    let decoded;
+    try {
+      decoded = jwt.verify(refreshToken, process.env.JWT_SECRET);
+    } catch (err) {
+      return res.status(403).json({ message: "Refresh token expired or invalid, please login again" });
+    }
+
+    if (decoded.userId !== userID) {
+      return res.status(403).json({ message: "Invalid refresh token, please login again" });
+    }
+
+    // Generate new access token
+    const newAccessToken = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "15m" }
+    );
+
+    res.status(200).json({ accessToken: newAccessToken });
+  } catch (error) {
+    console.error("Refresh Token Error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
 
