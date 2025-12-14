@@ -1,6 +1,7 @@
-import {} from "../controllers/contactus.js";
+
 import express from "express";
 import { submitContactForm , getAllContacts , getContactById , deleteContact ,patchContactStatus} from "../controllers/contactus.js";
+
 const contractrouter = express.Router();
 
 contractrouter.post("/", submitContactForm);

@@ -7,6 +7,10 @@ export const createBooking = async (req, res) => {
         console.log(req.body);
 
         // Send booking confirmation email
+         const ifdateexists = await Booknow.findOne({ eventdate: eventdate });
+        if (ifdateexists) {
+            return res.status(400).json({ message: "A booking already exists for the selected event date. Please choose a different date." });
+        }
         const mailOptions = {
             from: `"Events Team" <${process.env.SMTP_EMAIL}>`,
             to: email,
@@ -115,6 +119,8 @@ export const createBooking = async (req, res) => {
                 parsedContacts = contactMethod;
             }
         }
+
+       
 
         const newBooking = new Booknow({
             name,

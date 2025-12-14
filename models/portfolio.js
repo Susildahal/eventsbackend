@@ -27,6 +27,11 @@ const portfolioSchema = new mongoose.Schema(
             type: Boolean,
             default: true,
         },
+        date: {
+            type: Date,
+            required: true,
+        },
+        
     }, { timestamps: true }
 );
 

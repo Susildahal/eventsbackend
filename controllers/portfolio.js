@@ -15,9 +15,9 @@ const uploadBuffer = async (buffer) => {
 
  export const createPortfolioItem = async (req, res) => {
     try {
-        const { title, description, subtitle } = req.body;
-        if (!title || !description || !subtitle) {
-            return res.status(400).json({ message: "Title, subtitle and description are required" });
+        const { title, description, subtitle , date } = req.body;
+        if (!title || !description || !subtitle || !date) {
+            return res.status(400).json({ message: "Title, subtitle, description and date are required" });
         }
 const imageFile = req.file;
         let imageUrl = "";
@@ -32,7 +32,8 @@ const imageFile = req.file;
         const item = new Portfolio({
             title,
             subtitle,
-            description,    
+            description,
+            date,
             image: imageUrl,
             public_id: uploaded.public_id,
         });
@@ -77,9 +78,9 @@ export const getAllPortfolioItems = async (req, res) => {
 export const updatePortfolioItem = async (req, res) => {
     try {
         const { id } = req.params;
-        const { title, description, image  ,subtitle} = req.body;
-        if (!title || !description || !subtitle) {
-            return res.status(400).json({ message: "Title, subtitle and description are required" });
+        const { title, description, image  ,subtitle , date } = req.body;
+        if (!title || !description || !subtitle || !date) {
+            return res.status(400).json({ message: "Title, subtitle, description and date are required" });
         }
 
         const item = await Portfolio.findById(id);
@@ -87,7 +88,7 @@ export const updatePortfolioItem = async (req, res) => {
             return res.status(404).json({ message: "Portfolio item not found" });
         }
 
-        let updateData = { title, description, subtitle };
+        let updateData = { title, description, subtitle, date };
 
         if (req.file) {
             // Delete old image
