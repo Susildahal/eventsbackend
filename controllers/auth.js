@@ -56,7 +56,7 @@ export const login = async (req, res) => {
     }
 
     // 3️⃣ Token expiry logic (FIXED)
-    const expiresIn = rememberMe ? "7d" : "1h";
+    const expiresIn = rememberMe == true ? "7d" : "1h";
 
     // 4️⃣ Generate JWT
     const token = jwt.sign(
@@ -70,10 +70,11 @@ export const login = async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      maxAge: rememberMe
+      maxAge: rememberMe == true
         ? 7 * 24 * 60 * 60 * 1000 // 7 days
         : 60 * 60 * 1000,        // 1 hour
     });
+
 
     // 6️⃣ Response
     return res.status(200).json({

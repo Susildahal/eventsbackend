@@ -34,7 +34,8 @@ const port = process.env.PORT || 8000;
 console.log("PORT:", process.env.PORT);
 const corsOptions = {
   origin: ['http://localhost:3000', 'http://192.168.10.79:3000' ,'https://eventfrontend-ivory.vercel.app'],
-  optionsSuccessStatus: 200     
+  optionsSuccessStatus: 200,
+  credentials: true,
 };
 
 app.use(bodyParser.json({ limit: '50mb' }));
