@@ -1,159 +1,159 @@
 import Booknow from "../models/booknow.js";
 import transporter from "../config/nodemiler.js";
+import SiteSetting from "../models/sideSetting.js";
+
+// Create a new booking
 
 export const createBooking = async (req, res) => {
-    try {
-        const { name, email, phone, eventdate, eventtype, budgetrange, needs, contactMethod, status, budget, numberofpeople } = req.body;
-        console.log(req.body);
+  try {
+    const {
+      name,
+      email,
+      phone,
+      eventdate,
+      eventtype,
+      budgetrange,
+      needs,
+      contactMethod,
+      status,
+      budget,
+      numberofpeople
+    } = req.body;
 
-        // Send booking confirmation email
-         const ifdateexists = await Booknow.findOne({ eventdate: eventdate });
-        if (ifdateexists) {
-            return res.status(400).json({ message: "A booking already exists for the selected event date. Please choose a different date." });
-        }
-        const mailOptions = {
-            from: `"Events Team" <${process.env.SMTP_EMAIL}>`,
-            to: email,
-            subject: "🎉 Booking Confirmation - Event Received!",
-            html: `
-  <div style="
-    font-family: Arial, sans-serif;
-    background:#f4f4f4;
-    padding:25px;
-  ">
-    <div style="
-      max-width:600px;
-      margin:0 auto;
-      background:white;
-      border-radius:10px;
-      overflow:hidden;
-      box-shadow:0 3px 10px rgba(0,0,0,0.1);
-    ">
-      
-      <div style="background:#7c3aed; padding:20px; text-align:center;">
-        <h2 style="color:#fff; margin:0;">Event Booking Confirmation</h2>
-      </div>
-
-      <div style="padding:20px;">
-        <p style="font-size:15px; margin-bottom:15px;">Hello <b>${name}</b>,</p>
-        <p style="font-size:15px; margin-bottom:15px;">
-          🎉 We have successfully received your event booking!  
-        </p>
-
-        <h3 style="color:#7c3aed; margin-bottom:10px;">Booking Details:</h3>
-        <table style="width:100%; border-collapse:collapse; margin-bottom:15px;">
-          <tr>
-            <td style="padding:8px; border:1px solid #ddd;">Event Date</td>
-            <td style="padding:8px; border:1px solid #ddd;">${eventdate}</td>
-          </tr>
-          <tr>
-            <td style="padding:8px; border:1px solid #ddd;">Event Type</td>
-            <td style="padding:8px; border:1px solid #ddd;">${eventtype}</td>
-          </tr>
-          <tr>
-            <td style="padding:8px; border:1px solid #ddd;">Budget</td>
-            <td style="padding:8px; border:1px solid #ddd;">${budget}</td>
-          </tr>
-          <tr>
-            <td style="padding:8px; border:1px solid #ddd;">Number of People</td>
-            <td style="padding:8px; border:1px solid #ddd;">${numberofpeople}</td>
-          </tr>
-          <tr>
-            <td style="padding:8px; border:1px solid #ddd;">Contact Method</td>
-            <td style="padding:8px; border:1px solid #ddd;">${contactMethod}</td>
-          </tr>
-        </table>
-
-        <p style="font-size:15px;">
-          We will contact you soon with further details. 
-          If you need urgent help, feel free to reply to this email.
-        </p>
-
-        <p style="margin-top:20px; font-size:14px;">
-          Regards, <br />
-          <b>Your Events Team</b>
-        </p>
-      </div>
-
-      <div style="background:#7c3aed; text-align:center; padding:10px;">
-        <p style="color:#fff; font-size:13px; margin:0;">
-          © ${new Date().getFullYear()} Your Company | All Rights Reserved
-        </p>
-      </div>
-    </div>
-  </div>
-  `
-        };
-
-        // Send email with error handling
-        try {
-            const info = await transporter.sendMail(mailOptions);
-            console.log("Booking confirmation email sent:", info.messageId);
-        } catch (emailError) {
-            console.error("Failed to send booking confirmation email:", emailError);
-            // Continue with booking even if email fails
-        }
-
-        let parsedNeeds = [];
-        if (Array.isArray(needs)) {
-            parsedNeeds = needs.map(n => String(n).trim()).filter(Boolean);
-        } else if (typeof needs === 'string') {
-            try {
-                const parsed = JSON.parse(needs);
-                if (Array.isArray(parsed)) parsedNeeds = parsed.map(n => String(n).trim()).filter(Boolean);
-                else if (parsed && typeof parsed === 'object') parsedNeeds = Object.keys(parsed).map(k => String(k).trim()).filter(Boolean);
-                else parsedNeeds = String(parsed).split(',').map(s => s.trim()).filter(Boolean);
-            } catch (e) {
-                parsedNeeds = needs.split(',').map(s => s.trim()).filter(Boolean);
-            }
-        } else if (needs && typeof needs === 'object') {
-            parsedNeeds = Object.keys(needs).map(k => String(k).trim()).filter(Boolean);
-        }
-
-        // Normalize `contactMethod`
-        let parsedContacts = contactMethod;
-        if (typeof contactMethod === 'string') {
-            try {
-                parsedContacts = JSON.parse(contactMethod);
-            } catch (e) {
-                parsedContacts = contactMethod;
-            }
-        }
-
-       
-
-        const newBooking = new Booknow({
-            name,
-            email,
-            phone,
-            eventdate,
-            budgetrange,
-            needs: parsedNeeds,
-            contactMethod: parsedContacts,
-            status,
-            budget,
-            numberofpeople,
-            eventtype
-        });
-
-        await newBooking.save();
-        res.status(201).json({ message: "Booking created successfully", data: newBooking });
-
-    } catch (error) {
-        console.error("Create Booking Error:", error);
-
-        if (error.name === 'ValidationError') {
-            const errors = Object.values(error.errors).map(e => ({ path: e.path, message: e.message }));
-            return res.status(400).json({ message: 'Validation error', errors });
-        }
-
-        if (error.name === 'CastError') {
-            return res.status(400).json({ message: 'Invalid value for field', path: error.path, value: error.value });
-        }
-
-        res.status(500).json({ message: error.message || "Server error" });
+    // 🔹 Check if booking already exists for the date
+    const ifDateExists = await Booknow.findOne({ eventdate });
+    if (ifDateExists) {
+      return res.status(400).json({
+        message: "A booking already exists for the selected event date."
+      });
     }
+
+    // 🔹 Get Events OC Team Email from Site Settings
+    const siteSetting = await SiteSetting.findOne({});
+    const adminEmail = siteSetting?.email;
+
+    if (!adminEmail) {
+      return res.status(400).json({ message: "Admin email not configured" });
+    }
+
+    // 🔹 Parse Needs
+    let parsedNeeds = [];
+    if (Array.isArray(needs)) {
+      parsedNeeds = needs;
+    } else if (typeof needs === "string") {
+      parsedNeeds = needs.split(",").map(n => n.trim());
+    }
+
+    // 🔹 Normalize contact method
+    let parsedContactMethod = contactMethod;
+    if (typeof contactMethod === "string") {
+      try {
+        parsedContactMethod = JSON.parse(contactMethod);
+      } catch {
+        parsedContactMethod = contactMethod;
+      }
+    }
+
+    // 🔹 Save booking
+    const newBooking = new Booknow({
+      name,
+      email,
+      phone,
+      eventdate,
+      eventtype,
+      budgetrange,
+      needs: parsedNeeds,
+      contactMethod: parsedContactMethod,
+      status,
+      budget,
+      numberofpeople
+    });
+
+    await newBooking.save();
+
+    /* ==========================
+       📧 EMAIL TO USER
+    ========================== */
+    const userMailOptions = {
+      from: `"Events Team" <${process.env.SMTP_EMAIL}>`,
+      to: email,
+      subject: "🎉 Your Event Booking is Confirmed",
+      html: `
+      <div style="font-family:Arial;background:#f4f4f4;padding:25px;">
+        <div style="max-width:600px;margin:auto;background:#fff;border-radius:8px;">
+          <div style="background:#7c3aed;color:#fff;padding:20px;text-align:center;">
+            <h2>Booking Confirmed 🎉</h2>
+          </div>
+
+          <div style="padding:20px;">
+            <p>Hello <b>${name}</b>,</p>
+            <p>We have successfully received your booking request.</p>
+
+            <table style="width:100%;border-collapse:collapse;">
+              <tr><td style="border:1px solid #ddd;padding:8px;">Event Date</td><td style="border:1px solid #ddd;padding:8px;">${eventdate}</td></tr>
+              <tr><td style="border:1px solid #ddd;padding:8px;">Event Type</td><td style="border:1px solid #ddd;padding:8px;">${eventtype}</td></tr>
+              <tr><td style="border:1px solid #ddd;padding:8px;">Budget</td><td style="border:1px solid #ddd;padding:8px;">${budget}</td></tr>
+              <tr><td style="border:1px solid #ddd;padding:8px;">Guests</td><td style="border:1px solid #ddd;padding:8px;">${numberofpeople}</td></tr>
+            </table>
+
+            <p style="margin-top:15px;">
+              Our team will contact you shortly.
+            </p>
+
+            <p>Regards,<br/><b>Events Team</b></p>
+          </div>
+        </div>
+      </div>
+      `
+    };
+
+    /* ==========================
+       📧 EMAIL TO ADMIN / EVENTS OC TEAM
+    ========================== */
+    const adminMailOptions = {
+      from: `"Booking System" <${process.env.SMTP_EMAIL}>`,
+      to: adminEmail,
+      subject: "📩 New Event Booking Received",
+      html: `
+      <div style="font-family:Arial;">
+        <h2>New Booking Alert 🚨</h2>
+        <p><b>Name:</b> ${name}</p>
+        <p><b>Email:</b> ${email}</p>
+        <p><b>Phone:</b> ${phone}</p>
+        <p><b>Event Date:</b> ${eventdate}</p>
+        <p><b>Event Type:</b> ${eventtype}</p>
+        <p><b>Budget Range:</b> ${budgetrange}</p>
+        <p><b>Budget:</b> ${budget}</p>
+        <p><b>Guests:</b> ${numberofpeople}</p>
+        <p><b>Contact Method:</b> ${parsedContactMethod}</p>
+        <p><b>Needs:</b> ${parsedNeeds.join(", ")}</p>
+      </div>
+      `
+    };
+
+    // 🔹 Send Emails (Do not block booking)
+    try {
+      await transporter.sendMail(userMailOptions);
+      await transporter.sendMail(adminMailOptions);
+      console.log("User & Admin emails sent successfully");
+    } catch (emailError) {
+      console.error("Email sending failed:", emailError);
+    }
+
+    // 🔹 Final Response
+    res.status(201).json({
+      message: "Booking created successfully",
+      data: newBooking
+    });
+
+  } catch (error) {
+    console.error("Create Booking Error:", error);
+    res.status(500).json({
+      message: error.message || "Server error"
+    });
+  }
 };
+
 
 
 

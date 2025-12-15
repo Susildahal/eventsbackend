@@ -1,4 +1,4 @@
-import {register, login , deleteuser ,getallusers ,mee ,updatepassowrd ,forgotpassword ,checkotp ,resetpassword ,updateuser ,updateuserstatus ,profile ,refreshToken} from "../controllers/auth.js";
+import {register, login , deleteuser ,getallusers ,mee ,updatepassowrd ,forgotpassword ,checkotp ,resetpassword ,updateuser ,updateuserstatus ,profile } from "../controllers/auth.js";
 import express from "express";
 import { verifyToken } from "../middlewares/auth.js";
 import {isAdmin} from '../middlewares/auth.js';
@@ -18,6 +18,6 @@ userrouter.post("/reset-password", resetpassword);
 userrouter.put("/updateuser/:id", verifyToken, isAdmin, updateuser);
 userrouter.patch("/updateuserstatus/:id", verifyToken, isAdmin, updateuserstatus);
 userrouter.put("/profile/:id", verifyToken, upload.single("profilePicture"), profile);
-userrouter.post("/refresh-token", verifyToken, refreshToken);
+
 
 export default userrouter;
