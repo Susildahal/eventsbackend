@@ -33,7 +33,7 @@ configureCloudinary();
 const port = process.env.PORT || 8000;
 console.log("PORT:", process.env.PORT);
 const corsOptions = {
-  origin: ['http://localhost:3000', 'http://192.168.10.79:3000' ,'https://eventfrontend-ivory.vercel.app'],
+  origin: ['http://localhost:3000', 'http://192.168.10.79:3000' ,'https://eventfrontend-ivory.vercel.app','http://localhost:3001' ],
   optionsSuccessStatus: 200,
   credentials: true,
 };

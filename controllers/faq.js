@@ -26,6 +26,9 @@ export const getAllFaqs = async (req, res) => {
     const skip = (page - 1) * limit;
     const title = req.query.title;
     // Build filter object so the same filter can be used for both count and find
+    if(title==="") {
+    }
+
     const filter = {};
     if (title) {
         filter.title = new RegExp(title, "i");

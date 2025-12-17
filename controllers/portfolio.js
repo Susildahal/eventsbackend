@@ -65,7 +65,7 @@ export const getAllPortfolioItems = async (req, res) => {
     }
     else if (status === "false") {
         filter.status = false;
-    }
+    }  
 
     try {
         const items = await Portfolio.find(filter).sort({ createdAt: -1 });

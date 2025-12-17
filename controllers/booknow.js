@@ -17,7 +17,8 @@ export const createBooking = async (req, res) => {
       contactMethod,
       status,
       budget,
-      numberofpeople
+      numberofpeople,
+      message
     } = req.body;
 
     // 🔹 Check if booking already exists for the date
@@ -66,7 +67,9 @@ export const createBooking = async (req, res) => {
       contactMethod: parsedContactMethod,
       status,
       budget,
-      numberofpeople
+      numberofpeople,
+      message
+
     });
 
     await newBooking.save();

@@ -39,7 +39,7 @@ const booknowSchema = new mongoose.Schema(
             type: String,
             required: true,
             message: "Budget is required",
-            enum: ['Low', 'Medium', 'High'],
+            enum: ['low', 'medium', 'high'],
             message : '{VALUE} is not supported',
         },
         budgetrange: {
@@ -62,6 +62,7 @@ const booknowSchema = new mongoose.Schema(
             enum: ['Pending', 'Confirmed', 'Cancelled' ,'Completed'],
             default: 'Pending',
         },
+     
     },
     { timestamps: true }
 );

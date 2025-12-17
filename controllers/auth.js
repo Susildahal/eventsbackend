@@ -292,12 +292,21 @@ export const resetpassword = async (req, res) => {
 export const updateuser = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, email, password, role, address, phone } = req.body;
+        const { name, email, password, role, address, phone  } = req.body;
+
+        let hashedPassword;
+        if (password) {
+            hashedPassword = await bcrypt.hash(String(password), 10);
+        } else {
+            const user = await User.findById(id);
+            hashedPassword = user.password;
+        }
+        
         const updatedUser = await User.findByIdAndUpdate(
             id,
-            { name, email, password, role, address, phone },
+            { name, email, password: hashedPassword, role, address, phone },
             { new: true }
-        );;
+        );
         if (!updatedUser) {
             return res.status(404).json({ message: "User not found" });
         }
@@ -335,7 +344,7 @@ export const updateuserstatus = async (req, res) => {
 
 export const profile = async (req, res) => {
   const { id } = req.params;
-  const { name, email, phone, address } = req.body;
+  const { name, email, phone, address ,password } = req.body;
 
   try {
     // 1. Find user
@@ -371,6 +380,7 @@ export const profile = async (req, res) => {
     }
 
     // 3. Update user profile
+const hashedPassword = password ? await bcrypt.hash(String(password), 10) : user.password;
     const updatedUser = await User.findByIdAndUpdate(
       id,
       {
@@ -378,6 +388,7 @@ export const profile = async (req, res) => {
         email,
         phone,
         address,
+        password: hashedPassword,
         profilePicture: imageUrl,
         publicId: publicId,
       },
@@ -386,7 +397,7 @@ export const profile = async (req, res) => {
 
     return res.status(200).json({
       message: "Profile updated successfully",
-      data: updatedUser,
+      data: updatedUser.select("-password" ,'otp ','otpExpiry'),
     });
   } catch (error) {
     console.error("Profile Update Error:", error);
