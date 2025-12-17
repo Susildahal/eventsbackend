@@ -138,7 +138,7 @@ export const createBooking = async (req, res) => {
     try {
       await transporter.sendMail(userMailOptions);
       await transporter.sendMail(adminMailOptions);
-      console.log("User & Admin emails sent successfully");
+  
     } catch (emailError) {
       console.error("Email sending failed:", emailError);
     }
@@ -298,7 +298,6 @@ export const updateBooking = async (req, res) => {
 
             try {
                 const info = await transporter.sendMail(mailOptions);
-                console.log("Status update email sent:", info.messageId);
             } catch (emailError) {
                 console.error("Failed to send status update email:", emailError);
                 // Continue even if email fails

@@ -126,8 +126,6 @@ if (servicename) {
 }
 
 
-    console.log("Final Filter:", filter);
-
     const data = await VenueSourcing.find(filter);
 
     if (!data || data.length === 0) {

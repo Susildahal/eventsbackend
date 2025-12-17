@@ -227,7 +227,6 @@ export const forgotpassword = async (req, res) => {
         // Send email with better error handling
         try {
             const info = await transporter.sendMail(mailOptions);
-            console.log("Email sent successfully:", info.messageId);
             res.status(200).json({ message: `OTP sent to ${email}` });
         } catch (emailError) {
             console.error("Email sending failed:", emailError);

@@ -15,7 +15,6 @@ const uploadBuffer = async (buffer) => {
 export const createEvent = async (req, res) => {
     try {
         const eventData = req.body;
-        console.log("Event Data:", eventData);
         const newEvent = new Event(eventData);
         const coverImageFile = req.file;
         
