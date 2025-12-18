@@ -15,3 +15,17 @@ const limiter = rateLimit({
 });
 
 export default limiter;
+
+export const contactFormLimiter = rateLimit({
+  windowMs: 1 * 24 * 60 * 60 * 1000, 
+  limit: 2, 
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  handler: (req, res) => {
+    return res.status(429).json({
+      success: false,
+      message: "Too many contact form submissions, please try again after 1 day"
+    });
+  }
+});
+
