@@ -101,10 +101,14 @@ export const logout = (req, res) => {
 
 
 export const getallusers = async (req, res) => {
+const  limit  = parseInt(req.query.limit) || 10;
+const page = parseInt(req.query.page) || 1;
+const skip = (page - 1) * limit;
 
     try {
-        const users = await User.find().select("-password").sort({ createdAt: -1 });
-        res.status(200).json({ data: users });
+        const total = await User.countDocuments();
+        const users = await User.find().select("-password").sort({ createdAt: -1 }).skip(skip).limit(limit);
+        res.status(200).json({ data: users,pagination: { page, limit, total } });
     }
     catch (error) {
 

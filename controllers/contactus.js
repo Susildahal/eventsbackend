@@ -90,4 +90,17 @@ const {id} = req.params;
     }
 };
 
+export const deleteBulkContacts = async (req, res) => {
+    try {
+        const { ids } = req.body; // Expecting an array of IDs in the request body
+        const result = await ContactUs.deleteMany({ _id: { $in: ids } });
+        res.status(200).json({ message: `${result.deletedCount} contacts deleted successfully` });
+    }
+    catch (error) {
+        console.error("Bulk Delete Contacts Error:", error);
+        res.status(500).json({ message: error.message || "Server error" });
+    }
+};
+
+
 
