@@ -127,3 +127,5 @@ const seedFAQs = async () => {
 
 // Run the seeder
 seedFAQs();
+
+export { seedFAQs as faqSeeder };

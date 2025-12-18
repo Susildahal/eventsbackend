@@ -59,6 +59,9 @@ export const getPortfolioItemById = async (req, res) => {
 };
 export const getAllPortfolioItems = async (req, res) => {
     const status = req.query.status;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
     const filter = {};
     if (status === "true") {
         filter.status = true;
@@ -68,8 +71,9 @@ export const getAllPortfolioItems = async (req, res) => {
     }  
 
     try {
-        const items = await Portfolio.find(filter).sort({ createdAt: -1 });
-        res.status(200).json({ data: items });
+        const items = await Portfolio.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit);
+        const total = await Portfolio.countDocuments(filter);
+        res.status(200).json({ data: items,pagination: { page, limit, total } });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
