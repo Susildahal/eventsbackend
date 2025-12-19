@@ -41,9 +41,9 @@ const corsOptions = {
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 app.use(cors(corsOptions));
+app.set("trust proxy", 1);
 
 // Serve uploads directory as static
-app.use('/api/uploads', express.static('uploads'));
 app.use(limiter);
 
 // Sample route
