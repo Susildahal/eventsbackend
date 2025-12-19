@@ -31,7 +31,7 @@ export const createBooking = async (req, res) => {
 
     // 🔹 Get Events OC Team Email from Site Settings
     const siteSetting = await SiteSetting.findOne({});
-    const adminEmail = siteSetting?.email;
+    const adminEmail = siteSetting?.bookingEmail;
 
     if (!adminEmail) {
       return res.status(400).json({ message: "Admin email not configured" });

@@ -17,7 +17,7 @@ export const getSiteSettings = async (req, res) => {
 // Create site settings
 export const createSiteSettings = async (req, res) => {
     try {
-        const { phone, email, location, address , siteName, socialMedia, siteDescription } = req.body;
+        const { phone, email, location, address , siteName, socialMedia, bookingEmail, siteDescription } = req.body;
         const normalize = (input) => {
             if (!input) return [];
             // If already an array of objects
@@ -67,7 +67,8 @@ export const createSiteSettings = async (req, res) => {
             address,
             siteName,
             socialMedia: parsedSocialMedia,
-            siteDescription
+            siteDescription,
+            bookingEmail
         });
 
         await newSettings.save();
@@ -92,7 +93,7 @@ export const createSiteSettings = async (req, res) => {
 // Update site settings
 export const updateSiteSettings = async (req, res) => {
     try {
-        const { phone, email, location, address , siteName, socialMedia, siteDescription } = req.body;
+        const { phone, email, location, address , siteName, socialMedia, siteDescription, bookingEmail } = req.body;
 
         // reuse normalization logic used in create
         const normalize = (input) => {
@@ -131,7 +132,9 @@ export const updateSiteSettings = async (req, res) => {
                 address,
                 siteName,
                 socialMedia: parsedSocialMediaUpdate,
-                siteDescription
+                siteDescription,
+                bookingEmail
+
             },
             { new: true, runValidators: true }
         );

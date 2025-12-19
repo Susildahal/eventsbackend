@@ -21,6 +21,11 @@ const siteSettingSchema = new mongoose.Schema({
         type: String,
 
     },
+
+    bookingEmail: {
+        type: String,
+    },
+    
     // Allow an array of social media objects with url and icon fields
     socialMedia: [{
         url: { type: String },

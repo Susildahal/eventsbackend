@@ -79,6 +79,7 @@ export const getAllPortfolioItems = async (req, res) => {
     }
 };
 
+
 export const updatePortfolioItem = async (req, res) => {
     try {
         const { id } = req.params;
