@@ -31,4 +31,4 @@ jobs:
             git pull origin main
             rm -rf node_modules package-lock.json
             npm install
-            pm2 restart eventsbackend || pm2 start index.js --name eventsbackend
+            pm2 restart eventsbackend || pm2 start eventsbackend --name eventsbackend
