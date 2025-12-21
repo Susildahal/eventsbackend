@@ -48,7 +48,7 @@ app.use(limiter);
 
 // Sample route
 app.get('/', (req, res) => {
-  res.send('Hello World! from cicd');
+  res.send('Hello World! ');
 });
 
 // Email configuration test endpoint
