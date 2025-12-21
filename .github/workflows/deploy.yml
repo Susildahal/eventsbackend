@@ -24,14 +24,15 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            cd ~/myprojects
+            cd ~/myprojects/eventbackned
             if [ ! -d "eventsbackend/.git" ]; then
-              git clone git@github.com:Susildahal/eventsbackend.git
+              git clone git@github.com:Susildahal/eventsbackend.git eventsbackend
+              cd eventsbackend
             else
               cd eventsbackend
               git reset --hard
               git pull origin main
             fi
-            cd eventsbackend
-            npm ci
-            pm2 restart eventsbackend || pm2 start npm --name eventsbackend -- start
+            rm -rf node_modules package-lock.json
+            npm install
+            pm2 restart eventsbackend || pm2 start index.js --name eventsbackend
