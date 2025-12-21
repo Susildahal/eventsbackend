@@ -400,7 +400,7 @@ const hashedPassword = password ? await bcrypt.hash(String(password), 10) : user
 
     return res.status(200).json({
       message: "Profile updated successfully",
-      data: updatedUser.select("-password" ,'otp ','otpExpiry'),
+      data: updatedUser,
     });
   } catch (error) {
     console.error("Profile Update Error:", error);
