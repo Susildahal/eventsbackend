@@ -1,0 +1,34 @@
+name: CI/CD Deploy
+
+on:
+  push:
+    branches:
+      - main   # Trigger deploy when main branch is updated
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout repo
+      - uses: actions/checkout@v4
+
+      # 2. Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'   # your Node.js version
+
+      # 3. Deploy to server via SSH
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd ~/myprojects/eventbackned/eventsbackend
+            git pull origin main
+            rm -rf node_modules package-lock.json
+            npm install
+            pm2 restart eventsbackend || pm2 start index.js --name eventsbackend
