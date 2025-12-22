@@ -33,9 +33,7 @@ export const createBooking = async (req, res) => {
     const siteSetting = await SiteSetting.findOne({});
     const adminEmail = siteSetting?.bookingEmail;
 
-    if (!adminEmail) {
-      return res.status(400).json({ message: "Admin email not configured" });
-    }
+  
 
     // 🔹 Parse Needs
     let parsedNeeds = [];
@@ -113,6 +111,10 @@ export const createBooking = async (req, res) => {
     /* ==========================
        📧 EMAIL TO ADMIN / EVENTS OC TEAM
     ========================== */
+
+        
+      
+ 
     const adminMailOptions = {
       from: `"Booking System" <${process.env.SMTP_EMAIL}>`,
       to: adminEmail,
@@ -133,12 +135,17 @@ export const createBooking = async (req, res) => {
       </div>
       `
     };
+       
 
     // 🔹 Send Emails (Do not block booking)
     try {
       await transporter.sendMail(userMailOptions);
+      if (adminEmail){
       await transporter.sendMail(adminMailOptions);
-  
+      }else {
+        console.warn("Admin email not configured. Skipping admin notification email.");
+      }
+
     } catch (emailError) {
       console.error("Email sending failed:", emailError);
     }
