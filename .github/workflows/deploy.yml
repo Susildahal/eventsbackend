@@ -37,19 +37,19 @@ jobs:
             pm2 restart eventsbackend || pm2 start npm --name eventsbackend -- start
 
             env:
-              PORT: ${{ secrets.PORT }}
-              MONGODB_URI: ${{ secrets.MONGODB_URI }}
-              JWT_SECRET: ${{ secrets.JWT_SECRET }}
-              SMTP_HOST: ${{ secrets.SMTP_HOST }}
-              SMTP_PORT: ${{ secrets.SMTP_PORT }}
-              SMTP_USER: ${{ secrets.SMTP_USER }}
-              SMTP_PASS: ${{ secrets.SMTP_PASS }}
-              SMTP_EMAIL: ${{ secrets.SMTP_EMAIL }}
-              name:${{ secrets.name }}
-              role:${{ secrets.role }}
-              address:${{ secrets.address }}
-              phone:${{ secrets.phone }}
-              NODE_ENV: production
+              # PORT: ${{ secrets.PORT }}
+              # MONGODB_URI: ${{ secrets.MONGODB_URI }}
+              # JWT_SECRET: ${{ secrets.JWT_SECRET }}
+              # SMTP_HOST: ${{ secrets.SMTP_HOST }}
+              # SMTP_PORT: ${{ secrets.SMTP_PORT }}
+              # SMTP_USER: ${{ secrets.SMTP_USER }}
+              # SMTP_PASS: ${{ secrets.SMTP_PASS }}
+              # SMTP_EMAIL: ${{ secrets.SMTP_EMAIL }}
+              # name:${{ secrets.name }}
+              # role:${{ secrets.role }}
+              # address:${{ secrets.address }}
+              # phone:${{ secrets.phone }}
+              # NODE_ENV: production
               
               
 
