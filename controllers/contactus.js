@@ -1,4 +1,6 @@
 import ContactUs from "../models/contactus.js";
+import SiteSetting from "../models/sideSetting.js";
+import transporter from "../config/nodemiler.js";
 
 export const submitContactForm = async (req, res) => {
     try {
@@ -6,6 +8,7 @@ export const submitContactForm = async (req, res) => {
         if (!name || !email || !phone || !subject || !message) {
             return res.status(400).json({ message: "All fields are required" });
         }
+        console.log("Contact Form Data:", req.body);
         const newContact = new ContactUs({
             name,
             email,
@@ -13,6 +16,72 @@ export const submitContactForm = async (req, res) => {
             subject,
             message
         });
+
+        // Send email notification (use verified sender as `from`, set replyTo to user)
+        const siteSetting = await SiteSetting.findOne({});
+        const notifyEmail = siteSetting?.bookingEmail || siteSetting?.email || process.env.SMTP_EMAIL;
+const mailOptions = {
+    from: `"Events Team" <${process.env.SMTP_EMAIL}>`,
+    to: notifyEmail,
+    replyTo: `${name} <${email}>`,
+    subject: `📩 New Contact: ${subject}`,
+    // Plain text fallback for old mail clients
+    text: `New submission from ${name} (${email}): ${message}`, 
+    // Professional HTML Layout
+    html: `
+    <div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 1px solid #eee; border-radius: 10px; padding: 20px;">
+        <h2 style="color: #333; border-bottom: 2px solid #4A90E2; padding-bottom: 10px;">New Contact Form Submission</h2>
+        
+        <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+            <tr>
+                <td style="padding: 10px 0; color: #777; width: 100px;"><strong>From:</strong></td>
+                <td style="padding: 10px 0; color: #333;">${name}</td>
+            </tr>
+            <tr>
+                <td style="padding: 10px 0; color: #777;"><strong>Email:</strong></td>
+                <td style="padding: 10px 0; color: #333;"><a href="mailto:${email}">${email}</a></td>
+            </tr>
+            <tr>
+                <td style="padding: 10px 0; color: #777;"><strong>Phone:</strong></td>
+                <td style="padding: 10px 0; color: #333;">${phone}</td>
+            </tr>
+            <tr>
+                <td style="padding: 10px 0; color: #777;"><strong>Subject:</strong></td>
+                <td style="padding: 10px 0; font-weight: bold; color: #333;">${subject}</td>
+            </tr>
+        </table>
+
+        <div style="margin-top: 20px; padding: 15px; background-color: #f9f9f9; border-radius: 5px; color: #444; line-height: 1.6;">
+            <strong>Message:</strong><br/>
+            ${message.replace(/\n/g, '<br/>')}
+        </div>
+
+        <div style="margin-top: 30px; text-align: center;">
+            <a href="mailto:${email}" style="background-color: #4A90E2; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                Reply Directly to User
+            </a>
+        </div>
+        
+        <p style="font-size: 12px; color: #aaa; margin-top: 30px; text-align: center;">
+            Submitted via the website contact form on ${new Date().toLocaleString()}
+        </p>
+    </div>
+    `
+};
+
+        try {
+            if (!notifyEmail) {
+                console.warn('No notifyEmail configured; skipping notification email.');
+            } else {
+                const info = await transporter.sendMail(mailOptions);
+                console.log('Contact notification sent:', info && info.messageId ? info.messageId : info);
+            }
+
+        } catch (mailErr) {
+            console.error('Failed to send contact notification email:', mailErr && mailErr.message ? mailErr.message : mailErr);
+        }
+
+        // Save contact regardless of email result
         await newContact.save();
         res.status(201).json({ message: "Contact form submitted successfully", contact: newContact });
     }
