@@ -17,7 +17,7 @@ const faqSchema = new mongoose.Schema({
         required: true,
         message: "Title is required",
         enum: ['General', 'Cancellations', 'Permits', 'Catering'],
-        message : '{VALUE} is not supported',
+        message : '{VALUE} is not supported in the faqs title',
     },
     status: {
         type: Boolean,
